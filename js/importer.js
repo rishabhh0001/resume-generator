@@ -85,15 +85,49 @@ function formatLIDate(d) {
 }
 
 function loadResumeData(parsed) {
-  // deep merge so missing keys don't blow things up
-  if (parsed.personal)        Object.assign(resumeData.personal, parsed.personal);
-  if (typeof parsed.summary === 'string') resumeData.summary = parsed.summary;
-  if (Array.isArray(parsed.experience))   resumeData.experience = parsed.experience;
-  if (Array.isArray(parsed.education))    resumeData.education  = parsed.education;
-  if (Array.isArray(parsed.skills))       resumeData.skills     = parsed.skills;
-  if (Array.isArray(parsed.projects))     resumeData.projects   = parsed.projects;
-  if (Array.isArray(parsed.certifications)) resumeData.certifications = parsed.certifications;
-  if (Array.isArray(parsed.languages))    resumeData.languages  = parsed.languages;
+  if (!parsed) return;
+
+  // 1. Personal Info - Normalize fields
+  const p = parsed.personal || {};
+  const targetP = resumeData.personal;
+  
+  // Map common variations
+  targetP.firstName = p.firstName || p.first_name || p.name?.split(' ')[0] || '';
+  targetP.lastName  = p.lastName  || p.last_name  || p.name?.split(' ').slice(1).join(' ') || '';
+  targetP.jobTitle  = p.jobTitle  || p.title || p.headline || '';
+  targetP.email     = p.email     || p.emailAddress || '';
+  targetP.phone     = p.phone     || p.phoneNumber || '';
+  targetP.location  = p.location  || p.address || p.geoLocationName || '';
+  targetP.website   = p.website   || p.url || '';
+  targetP.linkedin  = p.linkedin  || '';
+  targetP.github    = p.github    || '';
+  targetP.photo     = p.photo     || '';
+
+  // 2. Summary
+  resumeData.summary = parsed.summary || parsed.objective || '';
+
+  // 3. Helper to ensure IDs in arrays
+  const ensureIds = (arr, emptyFn) => {
+    if (!Array.isArray(arr)) return [];
+    return arr.map(item => ({
+      ...emptyFn(), // gets default structure + new ID
+      ...item,      // overwrites with imported data
+      id: item.id || makeId() // forces an ID if missing
+    }));
+  };
+
+  // 4. Update Arrays
+  resumeData.experience   = ensureIds(parsed.experience, emptyExperience);
+  resumeData.education    = ensureIds(parsed.education, emptyEducation);
+  resumeData.skills       = ensureIds(parsed.skills || parsed.Skills, () => ({ name: '', level: 'intermediate' }));
+  resumeData.projects     = ensureIds(parsed.projects, emptyProject);
+  resumeData.certifications = ensureIds(parsed.certifications, emptyCert);
+  resumeData.languages    = ensureIds(parsed.languages, () => ({ name: '', level: 'Professional' }));
+
+  // 5. Explicitly notify the app to sync UI
+  if (typeof syncFormToData === 'function') syncFormToData();
+  if (typeof renderAllEditors === 'function') renderAllEditors();
+  if (typeof renderResume === 'function') renderResume();
 }
 
 // ---- PDF import ----

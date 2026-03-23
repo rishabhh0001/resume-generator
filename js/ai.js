@@ -207,4 +207,135 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!str) return '';
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
+
+    // ---- AI CHAT ASSISTANT LOGIC ----
+    const chatDrawer = document.getElementById('aiChatDrawer');
+    const chatBtn = document.getElementById('aiAssistantBtn');
+    const chatClose = document.getElementById('closeAiChat');
+    const chatInput = document.getElementById('aiChatInput');
+    const chatSend = document.getElementById('sendAiChatBtn');
+    const chatMessages = document.getElementById('aiChatMessages');
+
+    if (chatBtn) {
+        chatBtn.addEventListener('click', () => {
+            chatDrawer.classList.add('open');
+            chatInput.focus();
+        });
+    }
+    if (chatClose) {
+        chatClose.addEventListener('click', () => chatDrawer.classList.remove('open'));
+    }
+
+    if (chatSend) {
+        chatSend.addEventListener('click', () => handleChatSend());
+    }
+    if (chatInput) {
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleChatSend();
+            }
+        });
+    }
+
+    async function handleChatSend() {
+        const msg = chatInput.value.trim();
+        if (!msg || chatSend.disabled) return;
+
+        chatInput.value = '';
+        appendMessage('user', msg);
+
+        // Show typing indicator
+        const typingId = 'typing-' + Date.now();
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'ai-msg bot';
+        typingDiv.id = typingId;
+        typingDiv.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const response = await fetchAiAssistantResponse(msg);
+            const tDiv = document.getElementById(typingId);
+            if (tDiv) tDiv.remove();
+
+            if (response.message) {
+                appendMessage('bot', response.message);
+            }
+
+            if (response.updatedData) {
+                if (typeof window.loadResumeData === 'function') {
+                    window.loadResumeData(response.updatedData);
+                    toast('AI updated your resume! ✨');
+                } else {
+                    Object.assign(window.resumeData, response.updatedData);
+                    if (typeof renderAllEditors === 'function') renderAllEditors();
+                    if (typeof renderResume === 'function') renderResume();
+                }
+            }
+        } catch (err) {
+            console.error('Chat AI Error:', err);
+            const tDiv = document.getElementById(typingId);
+            if (tDiv) tDiv.innerHTML = 'Sorry, I hit a snag. Please check your API key.';
+        }
+    }
+
+    function appendMessage(sender, text) {
+        const div = document.createElement('div');
+        div.className = `ai-msg ${sender}`;
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function fetchAiAssistantResponse(userMsg) {
+        const apiKey = localStorage.getItem('NVIDIA_API_KEY') || '';
+        if (!apiKey) {
+            promptForApiKey();
+            throw new Error('No API Key');
+        }
+
+        const systemPrompt = `You are a professional Resume Assistant. You have full control over the user's resume data.
+        If the user asks to add, remove, or change information, you MUST return a JSON object with:
+        1. "message": A brief, professional confirmation of what you did.
+        2. "updatedData": The ENTIRE updated resume data object including their changes.
+        
+        Keep the resume data structure consistent:
+        {
+          "personal": { "firstName", "lastName", "jobTitle", "email", "phone", "location", "website", "linkedin", "github" },
+          "summary": "",
+          "experience": [ { "company", "title", "location", "start", "end", "current", "description" } ],
+          "education": [ { "institution", "degree", "field", "start", "end", "description" } ],
+          "skills": [ { "name", "level" } ],
+          "projects": [ { "name", "description", "tech", "url" } ],
+          "languages": [ { "name", "level" } ]
+        }
+
+        Current Data: ${JSON.stringify(window.resumeData)}
+        
+        Return ONLY a JSON object. No markdown.`;
+
+        const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "mistralai/mistral-large-3-675b-instruct-2512",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userMsg }
+                ],
+                temperature: 0.1,
+                max_tokens: 3000
+            })
+        });
+
+        if (!response.ok) throw new Error('Assistant API failed');
+        const result = await response.json();
+        const content = result.choices[0].message.content;
+        const jsonStr = content.substring(content.indexOf('{'), content.lastIndexOf('}') + 1);
+        return JSON.parse(jsonStr);
+    }
 });
