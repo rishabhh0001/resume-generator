@@ -337,21 +337,23 @@ body {
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 16px; /* Increased from 10px */
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px; /* Increased from 4px */
+  min-width: 0; /* Prevents grid items from overflowing */
 }
 
 .form-group label {
   font-size: 0.72rem;
-  font-weight: 500;
+  font-weight: 600; /* Increased weight */
   color: var(--outline);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
 }
 
 .form-group input,
