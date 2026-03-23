@@ -14,6 +14,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+  <!-- Animated Background Blobs -->
+  <div class="glass-bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
 
   <!-- HEADER -->
   <header class="app-header">
@@ -50,6 +57,9 @@
       <button class="btn-ghost" id="importBtn">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Import
+      </button>
+      <button class="btn-ghost" id="copyJsonBtn" title="Copy Resume JSON">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" fill="currentColor" fill-opacity="0.2"/></svg>
       </button>
       <button class="btn-ghost" id="exportJsonBtn">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -397,7 +407,10 @@
           <button class="swatch" data-color="#1e293b" style="background:#1e293b" title="Slate"></button>
           <button class="swatch" data-color="#171717" style="background:#171717" title="Neutral"></button>
         </div>
-        <input type="color" id="customColor" value="#6366f1" title="Custom color" class="color-picker" />
+        <div class="color-picker-group">
+          <input type="color" id="customColor" value="#6366f1" title="Custom color" class="color-picker" />
+          <input type="text" id="hexInput" value="#6366f1" class="hex-input" spellcheck="false" maxlength="7" />
+        </div>
       </div>
 
       <div class="customize-group">

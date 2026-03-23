@@ -128,7 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
     settings.template = card.dataset.template;
-    renderResume();
+    const paper = document.getElementById('resumePreview');
+    paper.style.opacity = '0.5';
+    setTimeout(() => {
+      renderResume();
+      paper.style.opacity = '1';
+    }, 50);
   });
 
   // ---- color swatches ----
@@ -144,10 +149,24 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('customColor').addEventListener('input', e => {
-    settings.accent = e.target.value;
+    const color = e.target.value;
+    settings.accent = color;
+    document.getElementById('hexInput').value = color.toUpperCase();
     document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
     applyAccent();
     renderResume();
+  });
+
+  document.getElementById('hexInput').addEventListener('input', e => {
+    let color = e.target.value;
+    if (!color.startsWith('#')) color = '#' + color;
+    if (/^#[0-9A-F]{6}$/i.test(color)) {
+      settings.accent = color;
+      document.getElementById('customColor').value = color;
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+      applyAccent();
+      renderResume();
+    }
   });
 
   // ---- sliders ----
@@ -332,6 +351,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ---- export ----
+  document.getElementById('copyJsonBtn').addEventListener('click', () => {
+    const json = JSON.stringify(resumeData, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      toast('Resume JSON copied to clipboard ✓');
+    }).catch(err => {
+      toast('Failed to copy JSON');
+      console.error(err);
+    });
+  });
+
   document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
 
   document.getElementById('exportPdfBtn').addEventListener('click', async () => {
