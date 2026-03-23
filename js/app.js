@@ -142,8 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!sw) return;
     document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
     sw.classList.add('active');
-    document.getElementById('customColor').value = sw.dataset.color;
-    settings.accent = sw.dataset.color;
+    const color = sw.dataset.color;
+    document.getElementById('customColor').value = color;
+    document.getElementById('hexInput').value = color.toUpperCase();
+    settings.accent = color;
     applyAccent();
     renderResume();
   });
