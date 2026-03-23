@@ -616,6 +616,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }</div>`;
   }
 
+  // ---- resizer logic ----
+  const resizer = document.getElementById('editorResizer');
+  if (resizer) {
+    let isDragging = false;
+    resizer.addEventListener('mousedown', () => {
+      isDragging = true;
+      resizer.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      let w = e.clientX;
+      if (w < 260) w = 260;
+      if (w > 600) w = 600;
+      document.documentElement.style.setProperty('--editor-w', w + 'px');
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      resizer.classList.remove('dragging');
+      document.body.style.cursor = 'default';
+      document.body.style.userSelect = 'auto';
+      // autosave the width?
+      settings.editorWidth = getComputedStyle(document.documentElement).getPropertyValue('--editor-w');
+      saveToCache();
+    });
+  }
+
   // expose to inline onclick handlers
   window.updateEntry = (section, id, field, value) => {
     const entry = resumeData[section].find(e => e.id === id);

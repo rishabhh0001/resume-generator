@@ -47,11 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     async function fetchAiFeedback(resume) {
-        const apiKey = localStorage.getItem('NVIDIA_API_KEY') || '';
+        const apiKey = document.getElementById('nvidiaApiKeyInput').value || localStorage.getItem('NVIDIA_API_KEY') || '';
 
         if (!apiKey) {
-            await new Promise(r => setTimeout(r, 1500));
-            promptForApiKey();
+            toast('Please enter NVIDIA API Key in Customize -> API Settings');
             return getMockFeedback(resume);
         }
 
@@ -101,10 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
      * SMART PDF PARSING: Converts raw text from PDF/Paste into structured JSON
      */
     window.parseResumeTextWithAi = async function(text) {
-        const apiKey = localStorage.getItem('NVIDIA_API_KEY') || '';
+        const apiKey = document.getElementById('nvidiaApiKeyInput').value || localStorage.getItem('NVIDIA_API_KEY') || '';
         
         if (!apiKey) {
-            toast('Enter NVIDIA API Key in AI Insights for Smart PDF Parsing!');
+            toast('Enter NVIDIA API Key in Customize -> API Settings for Smart PDF Parsing!');
             return null;
         }
 
@@ -192,15 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return tips;
     }
 
-    function promptForApiKey() {
-        if (localStorage.getItem('NVIDIA_API_KEY_PROMPTED')) return;
-
-        const key = prompt("The AI Reviewer can use NVIDIA's API for better results. Enter your NVIDIA API Key (or leave blank to use Demo mode):");
-        if (key) {
-            localStorage.setItem('NVIDIA_API_KEY', key);
-            toast('API Key saved! Click Review again.');
-        }
-        localStorage.setItem('NVIDIA_API_KEY_PROMPTED', 'true');
+    // ---- API KEY PERSISTENCE ----
+    const keyInput = document.getElementById('nvidiaApiKeyInput');
+    if (keyInput) {
+        keyInput.value = localStorage.getItem('NVIDIA_API_KEY') || '';
+        keyInput.addEventListener('input', () => {
+            localStorage.setItem('NVIDIA_API_KEY', keyInput.value.trim());
+        });
     }
 
     function esc(str) {
@@ -289,9 +286,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchAiAssistantResponse(userMsg) {
-        const apiKey = localStorage.getItem('NVIDIA_API_KEY') || '';
+        const apiKey = document.getElementById('nvidiaApiKeyInput').value || localStorage.getItem('NVIDIA_API_KEY') || '';
         if (!apiKey) {
-            promptForApiKey();
+            toast('Enter NVIDIA API Key in Customize -> API Settings');
             throw new Error('No API Key');
         }
 
