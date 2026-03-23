@@ -1,4 +1,3 @@
-// js/ai.js — AI Integration for Resume Review & Tips
 
 document.addEventListener('DOMContentLoaded', () => {
     const aiBtn = document.getElementById('aiReviewBtn');
@@ -23,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // 3. Call AI (NVIDIA API)
             const feedback = await fetchAiFeedback(data);
-            
+
             // 4. Render results
             renderAiTips(feedback);
         } catch (err) {
@@ -39,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // In a real production app, you'd call a backend to avoid exposing keys.
         // For this demo/tool, we'll try to get the key from a global 'config' or localStorage.
         const apiKey = localStorage.getItem('NVIDIA_API_KEY') || '';
-        
+
         if (!apiKey) {
             // Mock response if no key is found, then ask user
             await new Promise(r => setTimeout(r, 1500)); // simulate lag
@@ -55,6 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
         Provide 3-4 professional tips for improvement. Format as a JSON array of objects with "title" and "text" fields.`;
 
         try {
+            // RECOMMENDED MODELS from your NVIDIA Build List:
+            // 1. mistralai/mistral-large-3-675b-instruct-2512 (Top-tier reasoning & professional tips)
+            // 2. deepseek-ai/deepseek-v3 (Excellent for data extraction/JSON)
+            // 3. nvidia/llama-3.1-405b-instruct (Strong multi-purpose)
+
             const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -62,9 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: "nvidia/llama-3.1-405b-instruct",
+                    model: "mistralai/mistral-large-3-675b-instruct-2512",
                     messages: [{ role: "user", content: prompt }],
-                    temperature: 0.2,
+                    temperature: 0.1,
                     top_p: 0.7,
                     max_tokens: 1024,
                 })
@@ -77,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
             const content = result.choices[0].message.content;
-            
+
             // Extract JSON from response
             const jsonStr = content.substring(content.indexOf('['), content.lastIndexOf(']') + 1);
             return JSON.parse(jsonStr);
@@ -103,24 +107,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setAiLoading(isLoading) {
         aiBtn.disabled = isLoading;
-        aiBtn.innerHTML = isLoading ? 
-            '<div class="loader-ai"></div> Reviewing...' : 
+        aiBtn.innerHTML = isLoading ?
+            '<div class="loader-ai"></div> Reviewing...' :
             '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Review with AI';
     }
 
     function getMockFeedback(resume) {
         const tips = [
-            { 
-                title: "Action Verbs", 
-                text: "Start your bullet points with strong action verbs like 'Spearheaded', 'Orchestrated', or 'Developed' to show impact." 
+            {
+                title: "Action Verbs",
+                text: "Start your bullet points with strong action verbs like 'Spearheaded', 'Orchestrated', or 'Developed' to show impact."
             },
-            { 
-                title: "Quantifiable Metrics", 
-                text: "Try to add numbers (e.g., 'Increased efficiency by 20%') to your experience descriptions to give them more weight." 
+            {
+                title: "Quantifiable Metrics",
+                text: "Try to add numbers (e.g., 'Increased efficiency by 20%') to your experience descriptions to give them more weight."
             },
-            { 
-                title: "Skill Grouping", 
-                text: "Since you have ${resume.skills.length} skills, consider grouping them by 'Core' and 'Familiar' for better readability." 
+            {
+                title: "Skill Grouping",
+                text: "Since you have ${resume.skills.length} skills, consider grouping them by 'Core' and 'Familiar' for better readability."
             }
         ];
         return tips;
@@ -128,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function promptForApiKey() {
         if (localStorage.getItem('NVIDIA_API_KEY_PROMPTED')) return;
-        
+
         const key = prompt("The AI Reviewer can use NVIDIA's API for better results. Enter your NVIDIA API Key (or leave blank to use Demo mode):");
         if (key) {
             localStorage.setItem('NVIDIA_API_KEY', key);

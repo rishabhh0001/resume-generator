@@ -140,6 +140,27 @@ body {
   flex-shrink: 0;
 }
 
+.portfolio-link-nav {
+  margin-left: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: var(--font-main);
+}
+
+.portfolio-link-nav:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
 .header-brand {
   display: flex;
   align-items: center;
@@ -1879,3 +1900,42 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Template Thumbnails - Previews in the Sidebar */
+.atspro-preview .tp-lines-full { display: flex; flex-direction: column; gap: 4px; padding: 10px; width: 100%; }
+.atspro-preview .tp-lines-full div { height: 2px; background: rgba(255,255,255,0.15); width: 100%; }
+
+.tech-preview .tp-header-mono { height: 10px; background: var(--accent); margin-bottom: 4px; border-radius: 2px 2px 0 0; opacity: 0.4; width: 100%; }
+.tech-preview .tp-lines { padding: 4px; display: flex; flex-direction: column; gap: 3px; }
+.tech-preview .tp-lines div { height: 2px; background: rgba(255,255,255,0.1); width: 80%; }
+
+.bold-preview .tp-accent-top { height: 15px; background: var(--accent); opacity: 0.4; margin-bottom: 5px; width: 100%; }
+.bold-preview .tp-lines { padding: 5px; }
+.bold-preview .tp-lines div { height: 2px; background: rgba(255,255,255,0.1); width: 100%; margin-bottom: 3px; }
+
+.compact-preview .tp-lines-dense { display: flex; flex-direction: column; gap: 2px; padding: 6px; width: 100%; }
+.compact-preview .tp-lines-dense div { height: 2px; background: rgba(255,255,255,0.1); width: 100%; }
+
+.serif-preview .tp-header-serif { height: 8px; border-bottom: 1px solid var(--accent); margin: 6px; opacity: 0.6; width: 80%; }
+.serif-preview .tp-lines { padding: 4px 8px; }
+.serif-preview .tp-lines div { height: 2px; background: rgba(255,255,255,0.1); width: 90%; margin-bottom: 3px; }
+
+/* ---- TEMPLATE SPECIFIC LAYOUTS (Actual Resume Styles) ---- */
+.resume-body.tpl-atspro { padding: 40px !important; }
+.resume-body.tpl-atspro .section-title { border-bottom: 2px solid #333; text-transform: uppercase; letter-spacing: 0.1em; padding-bottom: 4px; margin-bottom: 12px; }
+.resume-body.tpl-atspro .item-header { font-weight: 700; }
+
+.resume-body.tpl-tech { font-family: 'Inconsolata', monospace !important; }
+.resume-body.tpl-tech .section-title { color: var(--accent); border-left: 4px solid var(--accent); padding-left: 12px; background: rgba(255,255,255,0.02); }
+.resume-body.tpl-tech .item-header { border-left: 2px solid rgba(255,255,255,0.1); padding-left: 10px; }
+
+.resume-body.tpl-bold .resume-header { background: var(--accent); color: white; padding: 30px; margin: -40px -40px 30px -40px; }
+.resume-body.tpl-bold .resume-header * { color: white !important; }
+.resume-body.tpl-bold .section-title { color: var(--accent); font-weight: 800; border-left: none; }
+
+.resume-body.tpl-compact { font-size: 9pt !important; transform-origin: top left; }
+.resume-body.tpl-compact .section { margin-bottom: 10px; }
+.resume-body.tpl-compact .item-header { margin-bottom: 0; }
+
+.resume-body.tpl-serif { font-family: 'Playfair Display', serif !important; }
+.resume-body.tpl-serif .section-title { font-style: italic; border-bottom: 1px solid rgba(0,0,0,0.1); display: block; width: 100%; }

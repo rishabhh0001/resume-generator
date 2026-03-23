@@ -25,6 +25,11 @@ function renderResume() {
     case 'minimal':  html = tplMinimal(d, show, s.accent, m);   break;
     case 'executive':html = tplExecutive(d, show, s.accent, m); break;
     case 'creative': html = tplCreative(d, show, s.accent, m);  break;
+    case 'atspro':   html = tplAtsPro(d, show, s.accent, m);    break;
+    case 'tech':     html = tplTech(d, show, s.accent, m);      break;
+    case 'bold':     html = tplBold(d, show, s.accent, m);      break;
+    case 'compact':  html = tplCompact(d, show, s.accent, m);   break;
+    case 'serif':    html = tplSerif(d, show, s.accent, m);     break;
     default:         html = tplModern(d, show, s.accent, m);
   }
 
@@ -314,6 +319,120 @@ function tplCreative(d, show, accent, margin) {
           ${p.jobTitle ? `<div class="res-jobtitle">${esc(p.jobTitle)}</div>` : ''}
           <div class="res-contact">${contacts.join(' · ')}</div>
         </div>
+      </div>
+      ${body}
+    </div>
+  `;
+}
+
+function tplAtsPro(d, show, accent, margin) {
+  const p = d.personal;
+  const contacts = contactItems(p);
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
+  
+  const body = [
+    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Summary</div><p style="color:#333;font-size:0.95em">${esc(d.summary)}</p></div>` : '',
+    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Experience</div>${renderExperience(d.experience)}</div>` : '',
+    show.education && d.education.length   ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Education</div>${renderEducation(d.education)}</div>` : '',
+    show.projects && d.projects.length     ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Projects</div>${renderProjects(d.projects)}</div>` : '',
+    show.skills && d.skills.length         ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Skills</div>${renderSkills(d.skills, '#f5f5f5', '#333')}</div>` : '',
+    show.certifications && d.certifications.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Certifications</div>${renderCerts(d.certifications)}</div>` : '',
+  ].filter(Boolean).join('');
+
+  return `
+    <div class="resume-body tpl-atspro" style="padding:${margin}">
+      <div style="text-align:center; margin-bottom:24pt; border-bottom: 2pt solid #333; padding-bottom:12pt;">
+        <div style="font-size:24pt; font-weight:700; text-transform:uppercase; letter-spacing:2pt">${esc(name)}</div>
+        <div style="font-size:10pt; margin-top:8pt; word-spacing:4pt">${contacts.join('  |  ')}</div>
+      </div>
+      ${body}
+    </div>
+  `;
+}
+
+function tplTech(d, show, accent, margin) {
+  const p = d.personal;
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
+  const contacts = contactItems(p);
+
+  const body = [
+    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title">01_SUMMARY</div><p>${esc(d.summary)}</p></div>` : '',
+    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title">02_EXPERIENCE</div>${renderExperience(d.experience)}</div>` : '',
+    show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title">03_STACK</div>${renderSkills(d.skills, 'rgba(0,0,0,0.05)', '#444')}</div>` : '',
+    show.projects && d.projects.length ? `<div class="res-section"><div class="res-section-title">04_PROJECTS</div>${renderProjects(d.projects)}</div>` : '',
+  ].filter(Boolean).join('');
+
+  return `
+    <div class="resume-body tpl-tech" style="padding:${margin}">
+      <div style="border-bottom: 2pt solid var(--accent); padding-bottom:12pt; margin-bottom:24pt;">
+        <div style="font-size:24pt; font-weight:700; color:var(--accent); letter-spacing:-1pt">SYSTEM: ${esc(name.toUpperCase())}</div>
+        <div style="font-size:9pt; font-family:monospace; opacity:0.7;">> REF: ${contacts.join(' // ')}</div>
+      </div>
+      ${body}
+    </div>
+  `;
+}
+
+function tplBold(d, show, accent, margin) {
+  const p = d.personal;
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
+  const contacts = contactItems(p);
+
+  const body = [
+    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title">Profile</div><p>${esc(d.summary)}</p></div>` : '',
+    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title">Experience</div>${renderExperience(d.experience)}</div>` : '',
+    show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title">Expertise</div>${renderSkills(d.skills, accent, '#fff')}</div>` : '',
+  ].join('');
+
+  return `
+    <div class="resume-body tpl-bold">
+      <div class="resume-header" style="background:${accent}; padding:40pt ${margin}">
+        <div style="font-size:32pt; font-weight:900; line-height:1; letter-spacing:-1.5pt; color:white">${esc(name)}</div>
+        ${p.jobTitle ? `<div style="font-size:14pt; margin-top:10pt; opacity:0.9; color:white; font-weight:600">${esc(p.jobTitle)}</div>` : ''}
+        <div style="margin-top:20pt; font-size:10pt; color:white; opacity:0.8">${contacts.join('  ·  ')}</div>
+      </div>
+      <div style="padding:${margin}; padding-top:20pt;">
+        ${body}
+      </div>
+    </div>
+  `;
+}
+
+function tplCompact(d, show, accent, margin) {
+  const p = d.personal;
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
+  const contacts = contactItems(p);
+
+  return `
+    <div class="resume-body tpl-compact" style="padding:15mm ${margin}">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:1pt solid #333; padding-bottom:6pt; margin-bottom:12pt;">
+        <div style="font-size:18pt; font-weight:800; letter-spacing:-0.5pt">${esc(name)}</div>
+        <div style="font-size:8.5pt; font-weight:500;">${contacts.join('  |  ')}</div>
+      </div>
+      ${show.summary && d.summary ? `<div class="res-section"><p style="font-size:9pt; margin-bottom:10pt">${esc(d.summary)}</p></div>` : ''}
+      ${show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Experience</div>${renderExperience(d.experience)}</div>` : ''}
+      ${show.education && d.education.length   ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Education</div>${renderEducation(d.education)}</div>` : ''}
+      ${show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Skills</div>${renderSkills(d.skills, '#f0f0f0', '#333')}</div>` : ''}
+    </div>
+  `;
+}
+
+function tplSerif(d, show, accent, margin) {
+  const p = d.personal;
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
+  const contacts = contactItems(p);
+
+  const body = [
+    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title">Summary</div><p style="font-style:italic; font-family:serif; color:#444">${esc(d.summary)}</p></div>` : '',
+    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title">Experience</div>${renderExperience(d.experience)}</div>` : '',
+    show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title">Skills</div>${renderSkills(d.skills, 'transparent', '#444')}</div>` : '',
+  ].join('');
+
+  return `
+    <div class="resume-body tpl-serif" style="padding:${margin}">
+      <div style="text-align:center; padding-bottom:40pt; border-bottom: 1pt solid #ddd; margin-bottom:24pt;">
+        <div style="font-size:32pt; font-family:'Playfair Display', serif; color:#111">${esc(name)}</div>
+        <div style="font-size:10.5pt; font-style:italic; margin-top:12pt; color:#666; letter-spacing:0.5pt">${contacts.join('  ·  ')}</div>
       </div>
       ${body}
     </div>
