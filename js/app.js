@@ -26,8 +26,46 @@ document.addEventListener('DOMContentLoaded', () => {
     renderResume();
   });
 
+  // ---- autosave logic ----
+  function saveToCache() {
+    localStorage.setItem('resumegen_data', JSON.stringify(window.resumeData));
+    localStorage.setItem('resumegen_settings', JSON.stringify(window.settings));
+  }
+  window.saveToCache = saveToCache; // expose to renderer
+
+  function loadFromCache() {
+    const cachedData = localStorage.getItem('resumegen_data');
+    const cachedSettings = localStorage.getItem('resumegen_settings');
+    
+    if (cachedData && cachedData !== 'undefined') {
+      try {
+        const parsed = JSON.parse(cachedData);
+        if (parsed && typeof loadResumeData === 'function') {
+          loadResumeData(parsed);
+        }
+      } catch (e) { 
+        console.error('Cache load failed', e);
+        localStorage.removeItem('resumegen_data');
+      }
+    }
+    
+    if (cachedSettings && cachedSettings !== 'undefined') {
+      try {
+        const parsed = JSON.parse(cachedSettings);
+        if (parsed) {
+          Object.assign(window.settings, parsed);
+        }
+      } catch (e) { 
+        console.error('Settings cache load failed', e);
+        localStorage.removeItem('resumegen_settings');
+      }
+    }
+  }
+
   // ---- initial render + sync inputs ----
+  loadFromCache();
   syncFormToData();
+  renderAllEditors();
   renderResume();
   applyAccent();
   applyZoom();
