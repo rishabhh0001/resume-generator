@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeGen – Professional Resume Builder</title>
+  <meta name="description"
+    content="Build, customize, and export stunning resumes. Import from LinkedIn, PDF, or JSON. Full control over fonts, colors, and layouts." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Roboto:wght@300;400;500;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&family=Raleway:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- PDF.js for PDF import -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- html2canvas for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="brand-icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="url(#brandGrad)" />
+          <path d="M7 8h14M7 12h10M7 16h12M7 20h8" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <defs>
+            <linearGradient id="brandGrad" x1="0" y1="0" x2="28" y2="28">
+              <stop stop-color="#6366f1" />
+              <stop offset="1" stop-color="#8b5cf6" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <span class="brand-name">ResumeForge</span>
+    </div>
+    <nav class="header-actions">
+      <button class="btn-ghost" id="importBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        Import
+      </button>
+      <button class="btn-ghost" id="exportJsonBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        JSON
+      </button>
+      <button class="btn-primary" id="exportPdfBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        Export PDF
+      </button>
+    </nav>
+  </header>
+
+  <!-- ===== IMPORT MODAL ===== -->
+  <div class="modal-overlay" id="importModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Import Resume</h2>
+        <button class="modal-close" id="importModalClose">&times;</button>
+      </div>
+      <div class="import-tabs">
+        <button class="import-tab active" data-tab="json">JSON File</button>
+        <button class="import-tab" data-tab="linkedin">LinkedIn Export</button>
+        <button class="import-tab" data-tab="pdf">PDF</button>
+        <button class="import-tab" data-tab="paste">Paste Text</button>
+      </div>
+      <div class="import-content">
+        <!-- JSON Tab -->
+        <div class="import-pane active" id="tab-json">
+          <div class="drop-zone" id="jsonDropZone">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <p>Drop your <strong>JSON</strong> file here</p>
+            <span>or</span>
+            <label class="btn-ghost file-label">
+              Browse File
+              <input type="file" accept=".json" id="jsonFileInput" />
+            </label>
+          </div>
+        </div>
+        <!-- LinkedIn Tab -->
+        <div class="import-pane" id="tab-linkedin">
+          <div class="linkedin-info">
+            <div class="info-badge">ℹ️ How to export from LinkedIn</div>
+            <ol>
+              <li>Go to LinkedIn → Me → Settings & Privacy</li>
+              <li>Under "Data Privacy" click <strong>Get a copy of your data</strong></li>
+              <li>Select "Profile" and request archive</li>
+              <li>Download and extract the ZIP, then upload <code>Profile.json</code> here</li>
+            </ol>
+          </div>
+          <div class="drop-zone" id="linkedinDropZone">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0a66c2" stroke-width="1.5">
+              <rect x="2" y="2" width="20" height="20" rx="4" />
+              <path d="M8 11v5M8 8v.01M12 16v-5M12 13a2 2 0 014 0v3" />
+            </svg>
+            <p>Drop LinkedIn <strong>Profile.json</strong> here</p>
+            <label class="btn-ghost file-label">
+              Browse File
+              <input type="file" accept=".json,.zip" id="linkedinFileInput" />
+            </label>
+          </div>
+        </div>
+        <!-- PDF Tab -->
+        <div class="import-pane" id="tab-pdf">
+          <p class="hint">We'll extract text from your PDF and pre-fill the form. You may need to adjust some fields.
+          </p>
+          <div class="drop-zone" id="pdfDropZone">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <path d="M9 13h6M9 17h4" />
+            </svg>
+            <p>Drop your <strong>PDF resume</strong> here</p>
+            <label class="btn-ghost file-label">
+              Browse File
+              <input type="file" accept=".pdf" id="pdfFileInput" />
+            </label>
+          </div>
+          <div id="pdfProgress" class="progress-bar" style="display:none">
+            <div class="progress-fill" id="pdfProgressFill"></div>
+          </div>
+        </div>
+        <!-- Paste Text Tab -->
+        <div class="import-pane" id="tab-paste">
+          <p class="hint">Paste your resume text below. We'll try to parse the content automatically.</p>
+          <textarea id="pasteTextarea" placeholder="Paste your resume text here..."></textarea>
+          <button class="btn-primary" id="parseTextBtn">Parse & Import</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
+  <main class="app-main">
+    <!-- LEFT: Editor Panel -->
+    <aside class="editor-panel" id="editorPanel">
+      <div class="editor-sections">
+        <!-- Personal Info -->
+        <div class="editor-section" id="section-personal">
+          <div class="section-header" data-toggle="personal">
+            <div class="section-title">
+              <span class="section-icon">👤</span> Personal Info
+            </div>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="section-body" id="body-personal">
+            <div class="form-row">
+              <div class="form-group">
+                <label>First Name</label>
+                <input type="text" id="firstName" placeholder="John" data-field="firstName" />
+              </div>
+              <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" id="lastName" placeholder="Doe" data-field="lastName" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Job Title</label>
+              <input type="text" id="jobTitle" placeholder="Senior Software Engineer" data-field="jobTitle" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="john@example.com" data-field="email" />
+              </div>
+              <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" id="phone" placeholder="+1 (555) 000-0000" data-field="phone" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Location</label>
+                <input type="text" id="location" placeholder="San Francisco, CA" data-field="location" />
+              </div>
+              <div class="form-group">
+                <label>Website / Portfolio</label>
+                <input type="url" id="website" placeholder="https://johndoe.dev" data-field="website" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>LinkedIn</label>
+                <input type="url" id="linkedin" placeholder="linkedin.com/in/johndoe" data-field="linkedin" />
+              </div>
+              <div class="form-group">
+                <label>GitHub</label>
+                <input type="url" id="github" placeholder="github.com/johndoe" data-field="github" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="editor-section" id="section-summary">
+          <div class="section-header" data-toggle="summary">
+            <div class="section-title"><span class="section-icon">📝</span> Professional Summary</div>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="section-body" id="body-summary">
+            <div class="form-group">
+              <label>Summary</label>
+              <textarea id="summary" rows="4" placeholder="Results-driven engineer with 5+ years of experience..."
+                data-field="summary"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Experience -->
+        <div class="editor-section" id="section-experience">
+          <div class="section-header" data-toggle="experience">
+            <div class="section-title"><span class="section-icon">💼</span> Experience</div>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="section-body" id="body-experience">
+            <div id="experienceList"></div>
+            <button class="btn-add" id="addExperienceBtn">+ Add Experience</button>
+          </div>
+        </div>
+
+        <!-- Education -->
+        <div class="editor-section" id="section-education">
+          <div class="section-header" data-toggle="education">
+            <div class="section-title"><span class="section-icon">🎓</span> Education</div>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="section-body" id="body-education">
+            <div id="educationList"></div>
+            <button class="btn-add" id="addEducationBtn">+ Add Education</button>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="editor-section" id="section-skills">
+          <div class="section-header" data-toggle="skills">
+            <div class="section-title"><span class="section-icon">⚡</span> Skills</div>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="section-body" id="body-skills">
+            <div id="skillsList"></div>
+            <div class="skill-input-row">
+              <input type="text" id="skillInput" placeholder="e.g. React, Python, AWS..." />
+              <select id="skillLevel">
+                <option value="expert">Expert</option>
+                <option value="advanced">Advanced</option>
+                <option value="intermediate" selected>Intermediate</option>
+                <option value="beginner">Beginner</option>
+              </select>
+              <button class="btn-add-inline" id="addSkillBtn">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Projects -->
+        <div class="editor-section" id="section-projects">
+          <div class="section-header" data-toggle="projects">
+            <div class="section-title"><span class="section-icon">🚀</span> Projects</div>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="section-body" id="body-projects">
+            <div id="projectsList"></div>
+            <button class="btn-add" id="addProjectBtn">+ Add Project</button>
+          </div>
+        </div>
+
+        <!-- Certifications -->
+        <div class="editor-section" id="section-certifications">
+          <div class="section-header" data-toggle="certifications">
+            <div class="section-title"><span class="section-icon">🏆</span> Certifications</div>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="section-body" id="body-certifications">
+            <div id="certificationsList"></div>
+            <button class="btn-add" id="addCertBtn">+ Add Certification</button>
+          </div>
+        </div>
+
+        <!-- Languages -->
+        <div class="editor-section" id="section-languages">
+          <div class="section-header" data-toggle="languages">
+            <div class="section-title"><span class="section-icon">🌐</span> Languages</div>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="section-body" id="body-languages">
+            <div id="languagesList"></div>
+            <div class="skill-input-row">
+              <input type="text" id="langInput" placeholder="e.g. English" />
+              <select id="langLevel">
+                <option value="Native">Native</option>
+                <option value="Fluent">Fluent</option>
+                <option value="Intermediate" selected>Intermediate</option>
+                <option value="Basic">Basic</option>
+              </select>
+              <button class="btn-add-inline" id="addLangBtn">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER: Live Preview -->
+    <section class="preview-panel">
+      <div class="preview-toolbar">
+        <span class="preview-label">Live Preview</span>
+        <div class="zoom-controls">
+          <button class="zoom-btn" id="zoomOut">−</button>
+          <span id="zoomLevel">100%</span>
+          <button class="zoom-btn" id="zoomIn">+</button>
+        </div>
+      </div>
+      <div class="preview-scroll">
+        <div class="preview-scale-wrapper" id="previewScaleWrapper">
+          <div class="resume-paper" id="resumePreview">
+            <!-- Resume content rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Customize Panel -->
+    <aside class="customize-panel" id="customizePanel">
+      <div class="customize-header">
+        <h3>Customize</h3>
+      </div>
+
+      <!-- Templates -->
+      <div class="customize-group">
+        <label class="customize-label">Template</label>
+        <div class="template-grid" id="templateGrid">
+          <div class="template-card active" data-template="modern" title="Modern">
+            <div class="template-preview modern-preview">
+              <div class="tp-header"></div>
+              <div class="tp-lines">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+            <span>Modern</span>
+          </div>
+          <div class="template-card" data-template="classic" title="Classic">
+            <div class="template-preview classic-preview">
+              <div class="tp-lines-full">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+            <span>Classic</span>
+          </div>
+          <div class="template-card" data-template="minimal" title="Minimal">
+            <div class="template-preview minimal-preview">
+              <div class="tp-accent"></div>
+              <div class="tp-lines">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+            <span>Minimal</span>
+          </div>
+          <div class="template-card" data-template="executive" title="Executive">
+            <div class="template-preview executive-preview">
+              <div class="tp-sidebar"></div>
+              <div class="tp-lines">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+            <span>Executive</span>
+          </div>
+          <div class="template-card" data-template="creative" title="Creative">
+            <div class="template-preview creative-preview">
+              <div class="tp-dot"></div>
+              <div class="tp-lines">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+            <span>Creative</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accent Color -->
+      <div class="customize-group">
+        <label class="customize-label">Accent Color</label>
+        <div class="color-swatches" id="colorSwatches">
+          <button class="swatch active" data-color="#6366f1" style="background:#6366f1" title="Indigo"></button>
+          <button class="swatch" data-color="#0ea5e9" style="background:#0ea5e9" title="Sky"></button>
+          <button class="swatch" data-color="#10b981" style="background:#10b981" title="Emerald"></button>
+          <button class="swatch" data-color="#f59e0b" style="background:#f59e0b" title="Amber"></button>
+          <button class="swatch" data-color="#ef4444" style="background:#ef4444" title="Red"></button>
+          <button class="swatch" data-color="#8b5cf6" style="background:#8b5cf6" title="Violet"></button>
+          <button class="swatch" data-color="#ec4899" style="background:#ec4899" title="Pink"></button>
+          <button class="swatch" data-color="#14b8a6" style="background:#14b8a6" title="Teal"></button>
+          <button class="swatch" data-color="#1e293b" style="background:#1e293b" title="Slate"></button>
+        </div>
+        <input type="color" id="customColor" value="#6366f1" title="Custom color"
+          style="margin-top:8px;width:100%;height:36px;border-radius:8px;border:none;cursor:pointer;" />
+      </div>
+
+      <!-- Font Family -->
+      <div class="customize-group">
+        <label class="customize-label">Font Family</label>
+        <select class="customize-select" id="fontFamily">
+          <option value="Inter">Inter (Default)</option>
+          <option value="Playfair Display">Playfair Display</option>
+          <option value="Roboto">Roboto</option>
+          <option value="Lato">Lato</option>
+          <option value="Montserrat">Montserrat</option>
+          <option value="Raleway">Raleway</option>
+          <option value="Source Sans 3">Source Sans 3</option>
+        </select>
+      </div>
+
+      <!-- Font Size -->
+      <div class="customize-group">
+        <label class="customize-label">Base Font Size: <span id="fontSizeVal">11</span>pt</label>
+        <input type="range" id="fontSize" min="9" max="14" value="11" step="0.5" class="range-input" />
+      </div>
+
+      <!-- Line Spacing -->
+      <div class="customize-group">
+        <label class="customize-label">Line Spacing: <span id="lineSpacingVal">1.5</span></label>
+        <input type="range" id="lineSpacing" min="1.2" max="2.0" value="1.5" step="0.1" class="range-input" />
+      </div>
+
+      <!-- Page Margin -->
+      <div class="customize-group">
+        <label class="customize-label">Page Margin: <span id="marginVal">40</span>px</label>
+        <input type="range" id="pageMargin" min="20" max="70" value="40" step="5" class="range-input" />
+      </div>
+
+      <!-- Section Order -->
+      <div class="customize-group">
+        <label class="customize-label">Section Visibility</label>
+        <div class="section-toggles" id="sectionToggles">
+          <label class="toggle-item"><input type="checkbox" data-section="summary"
+              checked /><span>Summary</span></label>
+          <label class="toggle-item"><input type="checkbox" data-section="experience"
+              checked /><span>Experience</span></label>
+          <label class="toggle-item"><input type="checkbox" data-section="education"
+              checked /><span>Education</span></label>
+          <label class="toggle-item"><input type="checkbox" data-section="skills" checked /><span>Skills</span></label>
+          <label class="toggle-item"><input type="checkbox" data-section="projects"
+              checked /><span>Projects</span></label>
+          <label class="toggle-item"><input type="checkbox" data-section="certifications"
+              checked /><span>Certifications</span></label>
+          <label class="toggle-item"><input type="checkbox" data-section="languages"
+              checked /><span>Languages</span></label>
+        </div>
+      </div>
+
+      <!-- Paper Size -->
+      <div class="customize-group">
+        <label class="customize-label">Paper Size</label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="paperSize" value="a4" checked /> A4</label>
+          <label class="radio-item"><input type="radio" name="paperSize" value="letter" /> US Letter</label>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <p id="loadingText">Processing...</p>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/importer.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
