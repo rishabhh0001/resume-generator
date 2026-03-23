@@ -3,21 +3,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiBtn = document.getElementById('aiReviewBtn');
     const tipsContainer = document.getElementById('aiTipsContainer');
 
-    if (!aiBtn) return;
+    let isInsightShown = false;
 
     aiBtn.addEventListener('click', async () => {
         if (aiBtn.disabled) return;
 
+        // Toggle behavior: If already shown, hide it
+        if (isInsightShown) {
+            tipsContainer.innerHTML = '<p class="ai-empty-text">Click "Get Insight" to analyze your current content.</p>';
+            isInsightShown = false;
+            aiBtn.innerHTML = `
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Get Insight`;
+            return;
+        }
+
         // 1. Prepare data
         const data = window.resumeData;
-        if (!data || !data.personal.name) {
+        if (!data || !data.personal.firstName) {
             toast('Please enter some basic info first!');
             return;
         }
 
         // 2. Loading state
         setAiLoading(true);
-        tipsContainer.innerHTML = '<div style="display:flex; justify-content:center; padding:20px;"><div class="loader-ai"></div></div>';
+        tipsContainer.innerHTML = '<div style="display:flex; justify-content:center; padding:20px;"><div class="loader-ai-spinner"></div></div>';
 
         try {
             // 3. Call AI (NVIDIA API)
@@ -25,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 4. Render results
             renderAiTips(feedback);
+            isInsightShown = true;
+            aiBtn.innerHTML = `
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg> Refresh Insight`;
         } catch (err) {
             console.error('AI Error:', err);
             tipsContainer.innerHTML = `<p class="ai-empty-text" style="color: #ef4444;">Error: ${err.message}</p>`;
@@ -35,30 +47,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     async function fetchAiFeedback(resume) {
-        // In a real production app, you'd call a backend to avoid exposing keys.
-        // For this demo/tool, we'll try to get the key from a global 'config' or localStorage.
         const apiKey = localStorage.getItem('NVIDIA_API_KEY') || '';
 
         if (!apiKey) {
-            // Mock response if no key is found, then ask user
-            await new Promise(r => setTimeout(r, 1500)); // simulate lag
+            await new Promise(r => setTimeout(r, 1500));
             promptForApiKey();
             return getMockFeedback(resume);
         }
 
-        const prompt = `Review this resume for ${resume.personal.name}. 
-        Targeting: ${resume.personal.title}.
-        Experience: ${resume.experience.map(e => e.title + ' at ' + e.company).join(', ')}.
-        Skills: ${resume.skills.map(s => s.name).join(', ')}.
+        // Expanded prompt for "Strategic Analysis"
+        const prompt = `Perform a high-level strategic analysis of this resume for ${resume.personal.name}.
+        Job Title: ${resume.personal.jobTitle || 'N/A'}
+        Summary: ${resume.summary || 'N/A'}
+        Experience: ${resume.experience.map(e => e.title + ' at ' + e.company + ' (' + e.description + ')').join('; ')}
+        Skills: ${resume.skills.map(s => s.name).join(', ')}
         
-        Provide 3-4 professional tips for improvement. Format as a JSON array of objects with "title" and "text" fields.`;
+        Provide 3-4 professional, high-impact tips (INSIGHTS) to make this resume land a top-tier role. 
+        Focus on: Impact, Quantified results, and Modern layout trends.
+        Format as a JSON array of objects with "title" and "text" fields.`;
 
         try {
-            // RECOMMENDED MODELS from your NVIDIA Build List:
-            // 1. mistralai/mistral-large-3-675b-instruct-2512 (Top-tier reasoning & professional tips)
-            // 2. deepseek-ai/deepseek-v3 (Excellent for data extraction/JSON)
-            // 3. nvidia/llama-3.1-405b-instruct (Strong multi-purpose)
-
             const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -81,15 +89,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
             const content = result.choices[0].message.content;
-
-            // Extract JSON from response
             const jsonStr = content.substring(content.indexOf('['), content.lastIndexOf(']') + 1);
             return JSON.parse(jsonStr);
         } catch (err) {
             console.error('NVIDIA API Error:', err);
-            return getMockFeedback(resume); // Fallback to mock for demo
+            return getMockFeedback(resume);
         }
     }
+
+    /**
+     * SMART PDF PARSING: Converts raw text from PDF/Paste into structured JSON
+     */
+    window.parseResumeTextWithAi = async function(text) {
+        const apiKey = localStorage.getItem('NVIDIA_API_KEY') || '';
+        
+        if (!apiKey) {
+            toast('Enter NVIDIA API Key in AI Insights for Smart PDF Parsing!');
+            return null;
+        }
+
+        const prompt = `Convert the following raw resume text into a CLEAN, STRUCTURED JSON object.
+        Follow this EXACT schema:
+        {
+          "personal": { "firstName": "", "lastName": "", "email": "", "phone": "", "location": "", "jobTitle": "", "linkedin": "", "github": "", "website": "" },
+          "summary": "",
+          "experience": [ { "company": "", "title": "", "location": "", "start": "", "end": "", "current": false, "description": "" } ],
+          "education": [ { "institution": "", "degree": "", "field": "", "start": "", "end": "", "description": "" } ],
+          "skills": [ { "name": "", "level": "intermediate" } ],
+          "projects": [ { "name": "", "description": "", "link": "" } ],
+          "languages": [ { "name": "", "level": "Professional" } ]
+        }
+
+        RAW TEXT:
+        ${text.substring(0, 10000)}
+
+        Return ONLY the JSON object. No markdown, no prose.`;
+
+        try {
+            const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "mistralai/mistral-large-3-675b-instruct-2512",
+                    messages: [{ role: "user", content: prompt }],
+                    temperature: 0.05,
+                    top_p: 0.7,
+                    max_tokens: 2048,
+                })
+            });
+
+            if (!response.ok) throw new Error('AI Parsing failed');
+            
+            const result = await response.json();
+            const content = result.choices[0].message.content;
+            const jsonStr = content.substring(content.indexOf('{'), content.lastIndexOf('}') + 1);
+            return JSON.parse(jsonStr);
+        } catch (err) {
+            console.error('AI Parsing Error:', err);
+            return null;
+        }
+    };
 
     function renderAiTips(tips) {
         if (!tips || tips.length === 0) {
@@ -109,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         aiBtn.disabled = isLoading;
         aiBtn.innerHTML = isLoading ?
             '<div class="loader-ai"></div> Reviewing...' :
-            '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Review with AI';
+            '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Get Insight';
     }
 
     function getMockFeedback(resume) {
