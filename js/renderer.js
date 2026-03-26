@@ -55,7 +55,7 @@ function paginate(html, paperSize) {
   // Constants for A4/Letter heights in pixels (approx)
   const pageHeightLimit = paperSize === 'letter' ? 1056 : 1123;
   const padding = settings.pageMargin || 40;
-  const maxContentHeight = pageHeightLimit - (padding * 3.5);
+  const maxContentHeight = pageHeightLimit - (padding + 80);
 
   // We expect the template to return a main container (like .tpl-modern)
   // We want to process its children (Header + Body contents)
@@ -168,14 +168,14 @@ function paginate(html, paperSize) {
     const finalBodyHtml = bodyBlocksHtml ? `<div class="${bodyClass}" style="${bodyStyle}">${bodyBlocksHtml}</div>` : '';
 
     return `
-      <div class="resume-page ${paperSize === 'letter' ? 'letter' : ''}" style="padding: ${padding}px">
+      <div class="resume-page ${paperSize === 'letter' ? 'letter' : ''}" style="padding: ${padding}px ${padding}px 80px ${padding}px">
         <div class="${templateClass}" style="${rootStyle}; background:transparent; box-shadow:none; border:none; margin:0; padding:0; width:100%; height:100%; display:block;">
-          <div class="page-content" style="width:100%; height:100%;">
+          <div class="page-content" style="width:100%; height:100%; overflow:hidden;">
             ${headerHtml}
             ${finalBodyHtml}
           </div>
         </div>
-        ${showPageNum ? `<div class="page-footer">Page ${pageNum} of ${total}</div>` : ''}
+        ${showPageNum ? `<div class="page-footer" style="bottom: 30px">Page ${pageNum} of ${total}</div>` : ''}
       </div>
     `;
   };
