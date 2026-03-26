@@ -57,10 +57,6 @@ function paginate(html, paperSize) {
   const padding = settings.pageMargin || 40;
   const maxContentHeight = pageHeightLimit - (padding * 2);
 
-  const pages = [];
-  let currentPageContent = '';
-  let currentPageHeight = 0;
-
   // We expect the template to return a main container (like .tpl-modern)
   // We want to process its children (Header + Body contents)
   const root = temp.firstElementChild;
@@ -69,46 +65,76 @@ function paginate(html, paperSize) {
     return html;
   }
 
-  // Flatten the structure: Header followed by all children of .res-body
-  const blocks = [];
-  const header = root.querySelector('.res-header') || root.querySelector('header') || root.firstElementChild;
-  if (header) blocks.push(header);
+  const templateClass = root.className;
+  const rootStyle = root.getAttribute('style') || '';
+  const header = root.querySelector('.res-header');
+  const body = root.querySelector('.res-body');
 
-  const body = root.querySelector('.res-body') || root;
-  if (body !== header) {
-    Array.from(body.children).forEach(child => blocks.push(child));
-  } else if (root.children.length > 1) {
-     Array.from(root.children).slice(1).forEach(child => blocks.push(child));
+  const bodyStyle = body ? body.getAttribute('style') || '' : '';
+  const bodyClass = body ? body.className : 'res-body';
+
+  const blocks = [];
+  if (header) {
+    blocks.push({ html: header.outerHTML, height: header.offsetHeight, type: 'header' });
   }
 
-  const showPageNum = settings.visibleSections.pageNumber;
-  const createPageHtml = (content, pageNum, total) => `
-    <div class="resume-page ${paperSize === 'letter' ? 'letter' : ''}" style="padding: ${padding}px">
-      <div class="page-content" style="min-height: ${maxContentHeight}px; display: block;">
-        ${content}
-      </div>
-      ${showPageNum ? `<div class="page-footer">Page ${pageNum} of ${total}</div>` : ''}
-    </div>
-  `;
+  if (body) {
+    Array.from(body.children).forEach(child => {
+      blocks.push({ html: child.outerHTML, height: child.offsetHeight, type: 'body' });
+    });
+  } else {
+    Array.from(root.children).forEach(child => {
+      if (child !== header) {
+        blocks.push({ html: child.outerHTML, height: child.offsetHeight, type: 'body' });
+      }
+    });
+  }
 
-  let currentBlocksHtml = '';
+  const pages = [];
+  let currentPageHeight = 0;
+  let currentPageBlocks = [];
+
   blocks.forEach((block) => {
-    const blockHeight = block.offsetHeight;
-    if (currentPageHeight + blockHeight > maxContentHeight && currentBlocksHtml !== '') {
-      pages.push(currentBlocksHtml);
-      currentBlocksHtml = block.outerHTML;
-      currentPageHeight = blockHeight;
+    if (currentPageHeight + block.height > maxContentHeight && currentPageBlocks.length > 0) {
+      pages.push(currentPageBlocks);
+      currentPageBlocks = [block];
+      currentPageHeight = block.height;
     } else {
-      currentBlocksHtml += block.outerHTML;
-      currentPageHeight += blockHeight;
+      currentPageBlocks.push(block);
+      currentPageHeight += block.height;
     }
   });
 
-  if (currentBlocksHtml) {
-    pages.push(currentBlocksHtml);
+  if (currentPageBlocks.length) {
+    pages.push(currentPageBlocks);
   }
 
   document.body.removeChild(temp);
+
+  const showPageNum = settings.visibleSections.pageNumber;
+  const createPageHtml = (pageBlocks, pageNum, total) => {
+    let headerHtml = '';
+    let bodyItems = [];
+    pageBlocks.forEach(b => {
+      if (b.type === 'header') headerHtml = b.html;
+      else bodyItems.push(b.html);
+    });
+
+    const bodyHtml = bodyItems.length ? `<div class="${bodyClass}" style="${bodyStyle}">${bodyItems.join('')}</div>` : '';
+
+    return `
+      <div class="resume-page ${paperSize === 'letter' ? 'letter' : ''}" style="padding: ${padding}px">
+        <div class="${templateClass}" style="${rootStyle}; background:transparent; box-shadow:none; border:none; margin:0; padding:0; width:100%; height:100%; display:block;">
+          <div class="page-content" style="width:100%; height:100%;">
+            ${headerHtml}
+            ${bodyHtml}
+          </div>
+        </div>
+        ${showPageNum ? `<div class="page-footer">Page ${pageNum} of ${total}</div>` : ''}
+      </div>
+    `;
+  };
+
   return pages.map((p, i) => createPageHtml(p, i + 1, pages.length)).join('');
 }
 
