@@ -261,7 +261,7 @@ body {
 /* ---- MAIN LAYOUT ---- */
 .app-main {
   display: grid;
-  grid-template-columns: var(--editor-w, 320px) 1.5px 1fr 276px;
+  grid-template-columns: var(--editor-w, 320px) 2px 1fr 2px var(--customize-w, 276px);
   height: calc(100vh - var(--header-h));
   overflow: hidden;
 }

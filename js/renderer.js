@@ -103,6 +103,7 @@ function renderExperience(list) {
         </div>
         <div class="res-entry-date">${formatDateRange(e.start, e.end, e.current)}</div>
       </div>
+      ${e.url ? `<div class="res-entry-verify"><a href="${esc(e.url)}" target="_blank" data-pdf-url="${esc(e.url)}" class="verify-link">Click to Verify →</a></div>` : ''}
       ${e.description ? `<div class="res-entry-desc">${esc(e.description)}</div>` : ''}
     </div>
   `).join('');
@@ -138,7 +139,7 @@ function renderProjects(list) {
       <div class="res-entry-title">${esc(p.name || 'Project')}</div>
       ${p.tech ? `<div class="res-entry-sub">${esc(p.tech)}</div>` : ''}
       ${p.description ? `<div class="res-entry-desc">${esc(p.description)}</div>` : ''}
-      ${p.url ? `<div class="res-entry-link">${esc(p.url)}</div>` : ''}
+      ${p.url ? `<div class="res-entry-verify"><a href="${esc(p.url)}" target="_blank" data-pdf-url="${esc(p.url)}" class="verify-link">Click to Verify →</a></div>` : ''}
     </div>
   `).join('');
 }
@@ -154,6 +155,7 @@ function renderCerts(list) {
         </div>
         ${c.date ? `<div class="res-entry-date">${esc(c.date)}</div>` : ''}
       </div>
+      ${c.url ? `<div class="res-entry-verify"><a href="${esc(c.url)}" target="_blank" data-pdf-url="${esc(c.url)}" class="verify-link">Click to Verify →</a></div>` : ''}
     </div>
   `).join('');
 }

@@ -39,7 +39,7 @@ function makeId() {
 }
 
 function emptyExperience() {
-  return { id: makeId(), company: '', title: '', location: '', start: '', end: '', current: false, description: '' };
+  return { id: makeId(), company: '', title: '', location: '', start: '', end: '', current: false, description: '', url: '' };
 }
 
 function emptyEducation() {

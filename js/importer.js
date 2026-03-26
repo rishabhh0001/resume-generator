@@ -152,18 +152,7 @@ async function importFromPdf(file, onProgress) {
     if (onProgress) onProgress(i / pdf.numPages * 100);
   }
 
-  if (window.parseResumeTextWithAi) {
-    if (onProgress) onProgress(95); // AI phase
-    try {
-      const structured = await window.parseResumeTextWithAi(fullText);
-      if (structured) {
-        loadResumeData(structured);
-        return true;
-      }
-    } catch (e) {
-      console.warn('AI parsing failed, falling back to regex:', e);
-    }
-  }
+
 
   parseRawText(fullText);
   return true;

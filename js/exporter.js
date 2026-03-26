@@ -29,6 +29,18 @@ async function exportPdf() {
 
     wrapper.style.transform = prevTransform;
 
+    const paperRect = paper.getBoundingClientRect();
+    const links = Array.from(paper.querySelectorAll('a[data-pdf-url], .res-contact a')).map(el => {
+      const rect = el.getBoundingClientRect();
+      return {
+        url: el.getAttribute('data-pdf-url') || el.getAttribute('href'),
+        x: rect.left - paperRect.left,
+        y: rect.top - paperRect.top,
+        w: rect.width,
+        h: rect.height
+      };
+    });
+
     const imgData = canvas.toDataURL('image/jpeg', 0.97);
     const isLetter = settings.paperSize === 'letter';
 
@@ -42,14 +54,23 @@ async function exportPdf() {
     const imgH = canvas.height;
     const ratio = imgH / imgW;
     const pdfImgH = fw * ratio;
+    
+    // Pixel-to-mm conversion factor (based on paper width)
+    const pxToMm = fw / paperRect.width;
 
     // if content goes beyond one page, split it
     if (pdfImgH <= fh) {
       pdf.addImage(imgData, 'JPEG', 0, 0, fw, pdfImgH);
+      // Add links for single page
+      links.forEach(l => {
+        pdf.link(l.x * pxToMm, l.y * pxToMm, l.w * pxToMm, l.h * pxToMm, { url: l.url });
+      });
     } else {
       // multi-page: slice the image
       let yOffset = 0;
       let page = 0;
+      const pxPerPage = paperRect.height / (pdfImgH / fh); 
+      
       while (yOffset < imgH) {
         if (page > 0) pdf.addPage();
         const sliceH = Math.min(imgH - yOffset, Math.floor(imgW * (fh / fw)));
@@ -59,6 +80,17 @@ async function exportPdf() {
         const ctx = sliceCanvas.getContext('2d');
         ctx.drawImage(canvas, 0, -yOffset, imgW, imgH);
         pdf.addImage(sliceCanvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, fw, fh);
+        
+        // Add links for this page
+        const yOffsetPx = (yOffset / imgH) * paperRect.height;
+        const pageHeightPx = (sliceH / imgH) * paperRect.height;
+        
+        links.forEach(l => {
+          if (l.y >= yOffsetPx - 1 && l.y < yOffsetPx + pageHeightPx) {
+            pdf.link(l.x * pxToMm, (l.y - yOffsetPx) * pxToMm, l.w * pxToMm, l.h * pxToMm, { url: l.url });
+          }
+        });
+
         yOffset += sliceH;
         page++;
       }

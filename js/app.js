@@ -382,7 +382,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('parseTextBtn').addEventListener('click', () => {
     const text = document.getElementById('pasteTextarea').value.trim();
     if (!text) return;
+    
+    // Simple block-based parsing fallback
     parseRawText(text);
+    
     syncFormToData();
     renderAllEditors();
     renderResume();
@@ -500,6 +503,8 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="form-group"><label>Location</label>
           <input value="${esc2(e.location)}" oninput="updateEntry('experience','${e.id}','location',this.value)" /></div>
+        <div class="form-group"><label>URL</label>
+          <input value="${esc2(e.url)}" placeholder="https://..." oninput="updateEntry('experience','${e.id}','url',this.value)" /></div>
         <div class="form-group"><label>Description</label>
           <textarea rows="3" oninput="updateEntry('experience','${e.id}','description',this.value)">${esc2(e.description)}</textarea></div>
       </div>
@@ -617,22 +622,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---- resizer logic ----
-  const resizer = document.getElementById('editorResizer');
-  if (resizer) {
+  // ---- resizer logic ----
+  setupResizer('editorResizer', '--editor-w', 260, 600, 'left');
+  setupResizer('customizeResizer', '--customize-w', 240, 500, 'right');
+
+  function setupResizer(id, cssVar, min, max, side) {
+    const resizer = document.getElementById(id);
+    if (!resizer) return;
     let isDragging = false;
+
     resizer.addEventListener('mousedown', () => {
       isDragging = true;
       resizer.classList.add('dragging');
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
+      
+      // Add a transparent overlay to prevent iframe issues if any
+      const overlay = document.createElement('div');
+      overlay.id = 'resizer-overlay';
+      overlay.style.position = 'fixed';
+      overlay.style.inset = '0';
+      overlay.style.zIndex = '9999';
+      overlay.style.cursor = 'col-resize';
+      document.body.appendChild(overlay);
     });
 
     document.addEventListener('mousemove', e => {
       if (!isDragging) return;
-      let w = e.clientX;
-      if (w < 260) w = 260;
-      if (w > 600) w = 600;
-      document.documentElement.style.setProperty('--editor-w', w + 'px');
+      let w;
+      if (side === 'left') {
+        w = e.clientX;
+      } else {
+        w = window.innerWidth - e.clientX;
+      }
+      if (w < min) w = min;
+      if (w > max) w = max;
+      document.documentElement.style.setProperty(cssVar, w + 'px');
     });
 
     document.addEventListener('mouseup', () => {
@@ -641,8 +666,9 @@ document.addEventListener('DOMContentLoaded', () => {
       resizer.classList.remove('dragging');
       document.body.style.cursor = 'default';
       document.body.style.userSelect = 'auto';
-      // autosave the width?
-      settings.editorWidth = getComputedStyle(document.documentElement).getPropertyValue('--editor-w');
+      const overlay = document.getElementById('resizer-overlay');
+      if (overlay) overlay.remove();
+      
       saveToCache();
     });
   }
