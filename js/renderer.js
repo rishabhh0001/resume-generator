@@ -67,9 +67,6 @@ function paginate(html, paperSize) {
 
   const templateClass = root.className;
   const rootStyle = root.getAttribute('style') || '';
-  const header = root.querySelector('.res-header');
-  const body = root.querySelector('.res-body');
-
   const bodyStyle = body ? body.getAttribute('style') || '' : '';
   const bodyClass = body ? body.className : 'res-body';
 
@@ -79,13 +76,39 @@ function paginate(html, paperSize) {
   }
 
   if (body) {
-    Array.from(body.children).forEach(child => {
-      blocks.push({ html: child.outerHTML, height: child.offsetHeight, type: 'body' });
+    Array.from(body.children).forEach((section, i) => {
+      const sId = 'sec-' + i;
+      const sClass = section.className;
+      const sStyle = section.getAttribute('style') || '';
+      
+      Array.from(section.children).forEach(child => {
+        blocks.push({
+          html: child.outerHTML,
+          height: child.offsetHeight,
+          type: 'body',
+          sectionId: sId,
+          sectionClass: sClass,
+          sectionStyle: sStyle
+        });
+      });
     });
   } else {
-    Array.from(root.children).forEach(child => {
-      if (child !== header) {
-        blocks.push({ html: child.outerHTML, height: child.offsetHeight, type: 'body' });
+    // Fallback if no .res-body
+    Array.from(root.children).forEach((section, i) => {
+      if (section !== header) {
+        const sId = 'sec-' + i;
+        const sClass = section.className;
+        const sStyle = section.getAttribute('style') || '';
+        Array.from(section.children).forEach(child => {
+          blocks.push({
+            html: child.outerHTML,
+            height: child.offsetHeight,
+            type: 'body',
+            sectionId: sId,
+            sectionClass: sClass,
+            sectionStyle: sStyle
+          });
+        });
       }
     });
   }
@@ -114,20 +137,40 @@ function paginate(html, paperSize) {
   const showPageNum = settings.visibleSections.pageNumber;
   const createPageHtml = (pageBlocks, pageNum, total) => {
     let headerHtml = '';
-    let bodyItems = [];
+    let bodyBlocksHtml = '';
+    let currentSectionId = null;
+    let currentSectionContent = [];
+    let currentSectionMeta = null;
+
     pageBlocks.forEach(b => {
-      if (b.type === 'header') headerHtml = b.html;
-      else bodyItems.push(b.html);
+      if (b.type === 'header') {
+        headerHtml = b.html;
+      } else {
+        if (b.sectionId !== currentSectionId) {
+          if (currentSectionMeta) {
+            bodyBlocksHtml += `<div class="${currentSectionMeta.class}" style="${currentSectionMeta.style}">${currentSectionContent.join('')}</div>`;
+          }
+          currentSectionId = b.sectionId;
+          currentSectionContent = [b.html];
+          currentSectionMeta = { class: b.sectionClass, style: b.sectionStyle };
+        } else {
+          currentSectionContent.push(b.html);
+        }
+      }
     });
 
-    const bodyHtml = bodyItems.length ? `<div class="${bodyClass}" style="${bodyStyle}">${bodyItems.join('')}</div>` : '';
+    if (currentSectionMeta) {
+      bodyBlocksHtml += `<div class="${currentSectionMeta.class}" style="${currentSectionMeta.style}">${currentSectionContent.join('')}</div>`;
+    }
+
+    const finalBodyHtml = bodyBlocksHtml ? `<div class="${bodyClass}" style="${bodyStyle}">${bodyBlocksHtml}</div>` : '';
 
     return `
       <div class="resume-page ${paperSize === 'letter' ? 'letter' : ''}" style="padding: ${padding}px">
         <div class="${templateClass}" style="${rootStyle}; background:transparent; box-shadow:none; border:none; margin:0; padding:0; width:100%; height:100%; display:block;">
           <div class="page-content" style="width:100%; height:100%;">
             ${headerHtml}
-            ${bodyHtml}
+            ${finalBodyHtml}
           </div>
         </div>
         ${showPageNum ? `<div class="page-footer">Page ${pageNum} of ${total}</div>` : ''}
