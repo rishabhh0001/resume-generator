@@ -473,6 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderProjectsEditor();
     renderCertsEditor();
     renderLanguagesEditor();
+    renderSectionOrderEditor();
   }
 
   // ---- dynamic editors ----
@@ -718,6 +719,29 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLanguagesEditor();
     renderResume();
   };
+  window.moveSection = (idx, dir) => {
+    const target = idx + dir;
+    if (target < 0 || target >= settings.sectionOrder.length) return;
+    [settings.sectionOrder[idx], settings.sectionOrder[target]] = [settings.sectionOrder[target], settings.sectionOrder[idx]];
+    renderSectionOrderEditor();
+    renderResume();
+    saveToCache();
+  };
+
+  function renderSectionOrderEditor() {
+    const list = document.getElementById('sectionOrderList');
+    if (!list) return;
+    list.innerHTML = settings.sectionOrder.map((s, i) => `
+      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-card); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); font-size:0.75rem;">
+        <span style="text-transform:capitalize; font-weight:500;">${s}</span>
+        <div style="display:flex; gap:4px;">
+          ${i > 0 ? `<button class="btn-icon" onclick="moveSection(${i},-1)" title="Move Up">↑</button>` : '<div style="width:24px"></div>'}
+          ${i < settings.sectionOrder.length - 1 ? `<button class="btn-icon" onclick="moveSection(${i},1)" title="Move Down">↓</button>` : '<div style="width:24px"></div>'}
+        </div>
+      </div>
+    `).join('');
+  }
+
   // Periodic Autosave (every 7 seconds)
   setInterval(() => {
     if (typeof window.saveToCache === 'function') {

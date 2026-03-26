@@ -65,8 +65,8 @@ function paginate(html, paperSize) {
     return html;
   }
 
-  const header = root.querySelector('.res-header');
-  const body = root.querySelector('.res-body');
+  const header = root.querySelector('.res-header, .resume-header');
+  const body = root.querySelector('.res-body, .resume-body, .res-content');
   const templateClass = root.className;
   const rootStyle = root.getAttribute('style') || '';
   const bodyStyle = body ? body.getAttribute('style') || '' : '';
@@ -170,7 +170,7 @@ function paginate(html, paperSize) {
     return `
       <div class="resume-page ${paperSize === 'letter' ? 'letter' : ''}" style="padding: ${padding}px ${padding}px 80px ${padding}px">
         <div class="${templateClass}" style="${rootStyle}; background:transparent; box-shadow:none; border:none; margin:0; padding:0; width:100%; height:100%; display:block;">
-          <div class="page-content" style="width:100%; height:100%; overflow:hidden;">
+          <div class="page-content" style="width:100%; height:100%;">
             ${headerHtml}
             ${finalBodyHtml}
           </div>
@@ -332,9 +332,29 @@ function section(label, content, accentColor) {
   return `
     <div class="res-section" style="color:${accentColor}">
       <div class="res-section-title">${label}</div>
-      <div style="color: inherit">${content}</div>
+      ${content}
     </div>
   `;
+}
+
+// ================================================================
+// SECTION ORDERING HELPER
+// ================================================================
+function getOrderedBody(d, show, accent, customSectionRenderer) {
+  const order = settings.sectionOrder || ['summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'languages'];
+  return order.map(s => {
+    if (!show[s]) return '';
+    switch(s) {
+      case 'summary': return d.summary ? (customSectionRenderer ? customSectionRenderer('Summary', `<p style="font-size:0.92em;line-height:1.6">${esc(d.summary)}</p>`) : section('Summary', `<p style="font-size:0.92em;line-height:1.6">${esc(d.summary)}</p>`, accent)) : '';
+      case 'experience': return d.experience.length ? (customSectionRenderer ? customSectionRenderer('Experience', renderExperience(d.experience)) : section('Experience', renderExperience(d.experience), accent)) : '';
+      case 'education': return d.education.length ? (customSectionRenderer ? customSectionRenderer('Education', renderEducation(d.education)) : section('Education', renderEducation(d.education), accent)) : '';
+      case 'projects': return d.projects.length ? (customSectionRenderer ? customSectionRenderer('Projects', renderProjects(d.projects)) : section('Projects', renderProjects(d.projects), accent)) : '';
+      case 'skills': return d.skills.length ? (customSectionRenderer ? customSectionRenderer('Skills', renderSkills(d.skills, 'rgba(0,0,0,0.06)', '#333')) : section('Skills', renderSkills(d.skills, 'rgba(0,0,0,0.06)', '#333'), accent)) : '';
+      case 'certifications': return d.certifications.length ? (customSectionRenderer ? customSectionRenderer('Certifications', renderCerts(d.certifications)) : section('Certifications', renderCerts(d.certifications), accent)) : '';
+      case 'languages': return d.languages.length ? (customSectionRenderer ? customSectionRenderer('Languages', renderLanguages(d.languages)) : section('Languages', renderLanguages(d.languages), accent)) : '';
+      default: return '';
+    }
+  }).join('');
 }
 
 // ================================================================
@@ -346,15 +366,7 @@ function tplModern(d, show, accent, margin) {
   const contacts = contactItems(p);
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
 
-  const body = [
-    show.summary && d.summary ? section('Summary', `<p style="color:#333;font-size:0.92em;line-height:1.6">${esc(d.summary)}</p>`, accent) : '',
-    show.experience && d.experience.length ? section('Experience', renderExperience(d.experience), accent) : '',
-    show.education && d.education.length  ? section('Education',  renderEducation(d.education),   accent) : '',
-    show.projects && d.projects.length    ? section('Projects',   renderProjects(d.projects),      accent) : '',
-    show.skills && d.skills.length        ? section('Skills',     renderSkills(d.skills, 'rgba(0,0,0,0.06)', '#333'), accent) : '',
-    show.certifications && d.certifications.length ? section('Certifications', renderCerts(d.certifications), accent) : '',
-    show.languages && d.languages.length  ? section('Languages',  renderLanguages(d.languages),    accent) : '',
-  ].join('');
+  const body = getOrderedBody(d, show, accent);
 
   return `
     <div class="tpl-modern" style="--accent:${accent}">
@@ -378,15 +390,9 @@ function tplClassic(d, show, accent, margin) {
   const contacts = contactItems(p);
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
 
-  const body = [
-    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Profile</div><p style="color:#444;font-size:0.9em">${esc(d.summary)}</p></div>` : '',
-    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Experience</div>${renderExperience(d.experience)}</div>` : '',
-    show.education && d.education.length   ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Education</div>${renderEducation(d.education)}</div>` : '',
-    show.projects && d.projects.length     ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Projects</div>${renderProjects(d.projects)}</div>` : '',
-    show.skills && d.skills.length         ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Skills</div>${renderSkills(d.skills, '#f0f0f0', '#333')}</div>` : '',
-    show.certifications && d.certifications.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Certifications</div>${renderCerts(d.certifications)}</div>` : '',
-    show.languages && d.languages.length   ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Languages</div>${renderLanguages(d.languages)}</div>` : '',
-  ].join('');
+  const body = getOrderedBody(d, show, accent, (lbl, content) => {
+    return `<div class="res-section"><div class="res-section-title" style="color:${accent}">${lbl}</div>${content}</div>`;
+  });
 
   return `
     <div class="tpl-classic" style="padding:${margin}">
@@ -396,7 +402,7 @@ function tplClassic(d, show, accent, margin) {
         ${p.jobTitle ? `<div class="res-jobtitle">${esc(p.jobTitle)}</div>` : ''}
         <div class="res-contact">${contacts.map(c => `<span>${c}</span>`).join(' · ')}</div>
       </div>
-      ${body}
+      <div class="res-body">${body}</div>
     </div>
   `;
 }
@@ -406,15 +412,9 @@ function tplMinimal(d, show, accent, margin) {
   const contacts = contactItems(p);
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
 
-  const body = [
-    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title">About</div><p style="color:#555;font-size:0.9em">${esc(d.summary)}</p></div>` : '',
-    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title">Work</div>${renderExperience(d.experience)}</div>` : '',
-    show.education && d.education.length   ? `<div class="res-section"><div class="res-section-title">Education</div>${renderEducation(d.education)}</div>` : '',
-    show.projects && d.projects.length     ? `<div class="res-section"><div class="res-section-title">Projects</div>${renderProjects(d.projects)}</div>` : '',
-    show.skills && d.skills.length         ? `<div class="res-section"><div class="res-section-title">Skills</div>${renderSkills(d.skills, '#f5f5f5', '#444')}</div>` : '',
-    show.certifications && d.certifications.length ? `<div class="res-section"><div class="res-section-title">Certifications</div>${renderCerts(d.certifications)}</div>` : '',
-    show.languages && d.languages.length   ? `<div class="res-section"><div class="res-section-title">Languages</div>${renderLanguages(d.languages)}</div>` : '',
-  ].join('');
+  const body = getOrderedBody(d, show, accent, (lbl, content) => {
+    return `<div class="res-section"><div class="res-section-title">${lbl}</div>${content}</div>`;
+  });
 
   return `
     <div class="tpl-minimal" style="padding:${margin}">
@@ -427,7 +427,7 @@ function tplMinimal(d, show, accent, margin) {
         ${p.photo ? `<img src="${p.photo}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;">` : ''}
       </div>
       <div class="res-accent-bar" style="background:${accent}"></div>
-      <div style="color:#333">${body}</div>
+      <div class="res-body" style="color:#333">${body}</div>
     </div>
   `;
 }
@@ -458,13 +458,11 @@ function tplExecutive(d, show, accent, margin) {
       </div>` : ''}
   `;
 
-  const mainContent = [
-    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title" style="border-color:${accent};color:${accent}">Profile</div><p style="color:#444;font-size:0.9em">${esc(d.summary)}</p></div>` : '',
-    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title" style="border-color:${accent};color:${accent}">Experience</div>${renderExperience(d.experience)}</div>` : '',
-    show.education && d.education.length   ? `<div class="res-section"><div class="res-section-title" style="border-color:${accent};color:${accent}">Education</div>${renderEducation(d.education)}</div>` : '',
-    show.projects && d.projects.length     ? `<div class="res-section"><div class="res-section-title" style="border-color:${accent};color:${accent}">Projects</div>${renderProjects(d.projects)}</div>` : '',
-    show.certifications && d.certifications.length ? `<div class="res-section"><div class="res-section-title" style="border-color:${accent};color:${accent}">Certifications</div>${renderCerts(d.certifications)}</div>` : '',
-  ].join('');
+  const mainContent = getOrderedBody(d, show, accent, (lbl, content) => {
+    // Executive has a specific title style
+    if (['skills', 'languages'].includes(lbl.toLowerCase())) return ''; // Handled in sidebar
+    return `<div class="res-section"><div class="res-section-title" style="border-color:${accent};color:${accent}">${lbl}</div>${content}</div>`;
+  });
 
   return `
     <div class="tpl-executive">
@@ -518,14 +516,9 @@ function tplAtsPro(d, show, accent, margin) {
   const contacts = contactItems(p);
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
   
-  const body = [
-    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Summary</div><p style="color:#333;font-size:0.95em">${esc(d.summary)}</p></div>` : '',
-    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Experience</div>${renderExperience(d.experience)}</div>` : '',
-    show.education && d.education.length   ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Education</div>${renderEducation(d.education)}</div>` : '',
-    show.projects && d.projects.length     ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Projects</div>${renderProjects(d.projects)}</div>` : '',
-    show.skills && d.skills.length         ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Skills</div>${renderSkills(d.skills, '#f5f5f5', '#333')}</div>` : '',
-    show.certifications && d.certifications.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Certifications</div>${renderCerts(d.certifications)}</div>` : '',
-  ].filter(Boolean).join('');
+  const body = getOrderedBody(d, show, accent, (lbl, content) => {
+    return `<div class="res-section"><div class="res-section-title" style="color:${accent}">${lbl}</div>${content}</div>`;
+  });
 
   return `
     <div class="resume-body tpl-atspro" style="padding:${margin}">
@@ -533,7 +526,7 @@ function tplAtsPro(d, show, accent, margin) {
         <div style="font-size:24pt; font-weight:700; text-transform:uppercase; letter-spacing:2pt">${esc(name)}</div>
         <div style="font-size:10pt; margin-top:8pt; word-spacing:4pt">${contacts.join('  |  ')}</div>
       </div>
-      ${body}
+      <div class="res-body">${body}</div>
     </div>
   `;
 }
@@ -543,12 +536,9 @@ function tplTech(d, show, accent, margin) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
   const contacts = contactItems(p);
 
-  const body = [
-    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title">01_SUMMARY</div><p>${esc(d.summary)}</p></div>` : '',
-    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title">02_EXPERIENCE</div>${renderExperience(d.experience)}</div>` : '',
-    show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title">03_STACK</div>${renderSkills(d.skills, 'rgba(0,0,0,0.05)', '#444')}</div>` : '',
-    show.projects && d.projects.length ? `<div class="res-section"><div class="res-section-title">04_PROJECTS</div>${renderProjects(d.projects)}</div>` : '',
-  ].filter(Boolean).join('');
+  const body = getOrderedBody(d, show, accent, (lbl, content) => {
+    return `<div class="res-section"><div class="res-section-title">${lbl.toUpperCase()}</div>${content}</div>`;
+  });
 
   return `
     <div class="resume-body tpl-tech" style="padding:${margin}">
@@ -556,7 +546,7 @@ function tplTech(d, show, accent, margin) {
         <div style="font-size:24pt; font-weight:700; color:var(--accent); letter-spacing:-1pt">SYSTEM: ${esc(name.toUpperCase())}</div>
         <div style="font-size:9pt; font-family:monospace; opacity:0.7;">> REF: ${contacts.join(' // ')}</div>
       </div>
-      ${body}
+      <div class="res-body">${body}</div>
     </div>
   `;
 }
@@ -566,11 +556,10 @@ function tplBold(d, show, accent, margin) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
   const contacts = contactItems(p);
 
-  const body = [
-    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title">Profile</div><p>${esc(d.summary)}</p></div>` : '',
-    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title">Experience</div>${renderExperience(d.experience)}</div>` : '',
-    show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title">Expertise</div>${renderSkills(d.skills, accent, '#fff')}</div>` : '',
-  ].join('');
+  const body = getOrderedBody(d, show, accent, (lbl, content) => {
+    if (lbl === 'Skills') content = renderSkills(d.skills, accent, '#fff');
+    return `<div class="res-section"><div class="res-section-title">${lbl}</div>${content}</div>`;
+  });
 
   return `
     <div class="resume-body tpl-bold">
@@ -597,10 +586,12 @@ function tplCompact(d, show, accent, margin) {
         <div style="font-size:18pt; font-weight:800; letter-spacing:-0.5pt">${esc(name)}</div>
         <div style="font-size:8.5pt; font-weight:500;">${contacts.join('  |  ')}</div>
       </div>
-      ${show.summary && d.summary ? `<div class="res-section"><p style="font-size:9pt; margin-bottom:10pt">${esc(d.summary)}</p></div>` : ''}
-      ${show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Experience</div>${renderExperience(d.experience)}</div>` : ''}
-      ${show.education && d.education.length   ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Education</div>${renderEducation(d.education)}</div>` : ''}
-      ${show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Skills</div>${renderSkills(d.skills, '#f0f0f0', '#333')}</div>` : ''}
+      <div class="res-body">
+        ${show.summary && d.summary ? `<div class="res-section"><p style="font-size:9pt; margin-bottom:10pt">${esc(d.summary)}</p></div>` : ''}
+        ${show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Experience</div>${renderExperience(d.experience)}</div>` : ''}
+        ${show.education && d.education.length   ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Education</div>${renderEducation(d.education)}</div>` : ''}
+        ${show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Skills</div>${renderSkills(d.skills, '#f0f0f0', '#333')}</div>` : ''}
+      </div>
     </div>
   `;
 }
@@ -622,7 +613,7 @@ function tplSerif(d, show, accent, margin) {
         <div style="font-size:32pt; font-family:'Playfair Display', serif; color:#111">${esc(name)}</div>
         <div style="font-size:10.5pt; font-style:italic; margin-top:12pt; color:#666; letter-spacing:0.5pt">${contacts.join('  ·  ')}</div>
       </div>
-      ${body}
+      <div class="res-body">${body}</div>
     </div>
   `;
 }

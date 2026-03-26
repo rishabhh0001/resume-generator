@@ -32,7 +32,8 @@ let settings = {
     summary: true, experience: true, education: true,
     skills: true, projects: true, certifications: true, languages: true,
     skillLevel: true, languageLevel: true, pageNumber: true
-  }
+  },
+  sectionOrder: ['summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'languages']
 };
 
 function makeId() {
