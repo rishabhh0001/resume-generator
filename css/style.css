@@ -701,11 +701,12 @@ body {
 
 .page-footer {
   position: absolute;
-  bottom: 15mm;
+  bottom: 8mm;
   right: 15mm;
   font-size: 8pt;
   color: #888;
   font-family: inherit;
+  z-index: 10;
 }
 
 

@@ -55,7 +55,7 @@ function paginate(html, paperSize) {
   // Constants for A4/Letter heights in pixels (approx)
   const pageHeightLimit = paperSize === 'letter' ? 1056 : 1123;
   const padding = settings.pageMargin || 40;
-  const maxContentHeight = pageHeightLimit - (padding * 2.5);
+  const maxContentHeight = pageHeightLimit - (padding * 3.5);
 
   // We expect the template to return a main container (like .tpl-modern)
   // We want to process its children (Header + Body contents)
