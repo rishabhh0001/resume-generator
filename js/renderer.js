@@ -99,11 +99,12 @@ function renderExperience(list) {
       <div class="res-entry-header">
         <div>
           <div class="res-entry-title">${esc(e.title || 'Title')}</div>
-          <div class="res-entry-sub">${esc(e.company)}${e.location ? ` · ${esc(e.location)}` : ''}</div>
+          <div class="res-entry-sub">
+            ${esc(e.company)}${e.location ? ` · ${esc(e.location)}` : ''}${e.url ? ` ● <a href="${esc(e.url)}" target="_blank" data-pdf-url="${esc(e.url)}" class="cert-verify-link">Click to verify</a>` : ''}
+          </div>
         </div>
         <div class="res-entry-date">${formatDateRange(e.start, e.end, e.current)}</div>
       </div>
-      ${e.url ? `<div class="res-entry-verify"><a href="${esc(e.url)}" target="_blank" data-pdf-url="${esc(e.url)}" class="verify-link">Click to Verify →</a></div>` : ''}
       ${e.description ? `<div class="res-entry-desc">${esc(e.description)}</div>` : ''}
     </div>
   `).join('');
