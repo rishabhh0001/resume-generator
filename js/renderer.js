@@ -151,11 +151,12 @@ function renderCerts(list) {
       <div class="res-entry-header">
         <div>
           <div class="res-entry-title">${esc(c.name || 'Certification')}</div>
-          ${c.issuer ? `<div class="res-entry-sub">${esc(c.issuer)}</div>` : ''}
+          <div class="res-entry-sub">
+            ${esc(c.issuer || '')}${c.url ? ` ● <a href="${esc(c.url)}" target="_blank" data-pdf-url="${esc(c.url)}" class="cert-verify-link">Click to verify</a>` : ''}
+          </div>
         </div>
         ${c.date ? `<div class="res-entry-date">${esc(c.date)}</div>` : ''}
       </div>
-      ${c.url ? `<div class="res-entry-verify"><a href="${esc(c.url)}" target="_blank" data-pdf-url="${esc(c.url)}" class="verify-link">Click to Verify →</a></div>` : ''}
     </div>
   `).join('');
 }
