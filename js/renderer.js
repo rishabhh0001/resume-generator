@@ -203,8 +203,13 @@ function renderEducation(list) {
 
 function renderSkills(list, chipBg, chipColor) {
   if (!list.length) return '';
+  const showLevel = settings.visibleSections.skillLevel;
   return `<div class="res-skills-list">${
-    list.map(s => `<span class="res-skill-chip" style="background:${chipBg};color:${chipColor}">${esc(s.name)}</span>`).join('')
+    list.map(s => {
+      const name = typeof s === 'string' ? s : s.name;
+      const levelHtml = (typeof s === 'object' && showLevel && s.level) ? `<span style="opacity:0.8;font-size:0.9em"> · ${esc(s.level)}</span>` : '';
+      return `<span class="res-skill-chip" style="background:${chipBg};color:${chipColor}">${esc(name)}${levelHtml}</span>`;
+    }).join('')
   }</div>`;
 }
 

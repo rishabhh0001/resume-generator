@@ -30,7 +30,8 @@ let settings = {
   paperSize: 'a4',
   visibleSections: {
     summary: true, experience: true, education: true,
-    skills: true, projects: true, certifications: true, languages: true
+    skills: true, projects: true, certifications: true, languages: true,
+    skillLevel: true
   }
 };
 
