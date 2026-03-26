@@ -35,7 +35,7 @@ async function exportPdf() {
       if (i > 0) pdf.addPage();
 
       const canvas = await html2canvas(pageEl, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',

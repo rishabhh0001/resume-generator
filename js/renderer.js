@@ -81,19 +81,20 @@ function paginate(html, paperSize) {
      Array.from(root.children).slice(1).forEach(child => blocks.push(child));
   }
 
+  const showPageNum = settings.visibleSections.pageNumber;
   const createPageHtml = (content, pageNum, total) => `
     <div class="resume-page ${paperSize === 'letter' ? 'letter' : ''}" style="padding: ${padding}px">
-      <div class="page-content">${content}</div>
-      <div class="page-footer">Page ${pageNum}</div>
+      <div class="page-content" style="min-height: ${maxContentHeight}px; display: block;">
+        ${content}
+      </div>
+      ${showPageNum ? `<div class="page-footer">Page ${pageNum} of ${total}</div>` : ''}
     </div>
   `;
 
   let currentBlocksHtml = '';
-  blocks.forEach((block, index) => {
+  blocks.forEach((block) => {
     const blockHeight = block.offsetHeight;
-    
     if (currentPageHeight + blockHeight > maxContentHeight && currentBlocksHtml !== '') {
-      // Current page is full, save it and start new
       pages.push(currentBlocksHtml);
       currentBlocksHtml = block.outerHTML;
       currentPageHeight = blockHeight;
@@ -108,12 +109,7 @@ function paginate(html, paperSize) {
   }
 
   document.body.removeChild(temp);
-
-  // Return all pages joined, with updated footer "Page X of Y"
-  return pages.map((p, i) => {
-    const html = createPageHtml(p, i + 1, pages.length);
-    return html.replace('Page ' + (i+1), `Page ${i + 1} of ${pages.length}`);
-  }).join('');
+  return pages.map((p, i) => createPageHtml(p, i + 1, pages.length)).join('');
 }
 
 // ---- shared helpers ----
@@ -250,8 +246,12 @@ function renderCerts(list) {
 
 function renderLanguages(list) {
   if (!list.length) return '';
+  const showLevel = settings.visibleSections.languageLevel;
   return `<div class="res-skills-list">${
-    list.map(l => `<span class="res-skill-chip" style="background:#f0f0f0;color:#333">${esc(l.name)}${l.level ? ` · ${esc(l.level)}` : ''}</span>`).join('')
+    list.map(l => {
+      const levelHtml = (showLevel && l.level) ? `<span style="opacity:0.8;font-size:0.9em"> · ${esc(l.level)}</span>` : '';
+      return `<span class="res-skill-chip" style="background:#f0f0f0;color:#333">${esc(l.name)}${levelHtml}</span>`;
+    }).join('')
   }</div>`;
 }
 
