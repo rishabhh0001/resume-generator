@@ -137,9 +137,10 @@ function renderProjects(list) {
   return list.map(p => `
     <div class="res-entry">
       <div class="res-entry-title">${esc(p.name || 'Project')}</div>
-      ${p.tech ? `<div class="res-entry-sub">${esc(p.tech)}</div>` : ''}
+      <div class="res-entry-sub">
+        ${esc(p.tech || '')}${p.url ? ` ● <a href="${esc(p.url)}" target="_blank" data-pdf-url="${esc(p.url)}" class="cert-verify-link">Click for deployment</a>` : ''}
+      </div>
       ${p.description ? `<div class="res-entry-desc">${esc(p.description)}</div>` : ''}
-      ${p.url ? `<div class="res-entry-verify"><a href="${esc(p.url)}" target="_blank" data-pdf-url="${esc(p.url)}" class="verify-link">Click to Verify →</a></div>` : ''}
     </div>
   `).join('');
 }
