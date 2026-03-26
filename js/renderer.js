@@ -5,40 +5,115 @@ function renderResume() {
   const s = settings;
   const d = resumeData;
 
-  // paper size
-  el.className = 'resume-paper' + (s.paperSize === 'letter' ? ' letter' : '');
+  // paper size - base class only, actual pages handle dimensions
+  el.className = 'resume-paper-container' + (s.paperSize === 'letter' ? ' letter' : '');
   el.style.fontFamily = `'${s.fontFamily}', sans-serif`;
   el.style.fontSize = s.fontSize + 'pt';
   el.style.lineHeight = s.lineSpacing;
-
-  // inject accent CSS var into the paper (templates read it)
   el.style.setProperty('--accent', s.accent);
 
   const show = s.visibleSections;
   const m = s.pageMargin + 'px';
 
-  let html = '';
-
+  let rawHtml = '';
   switch (s.template) {
-    case 'modern':   html = tplModern(d, show, s.accent, m);    break;
-    case 'classic':  html = tplClassic(d, show, s.accent, m);   break;
-    case 'minimal':  html = tplMinimal(d, show, s.accent, m);   break;
-    case 'executive':html = tplExecutive(d, show, s.accent, m); break;
-    case 'creative': html = tplCreative(d, show, s.accent, m);  break;
-    case 'atspro':   html = tplAtsPro(d, show, s.accent, m);    break;
-    case 'tech':     html = tplTech(d, show, s.accent, m);      break;
-    case 'bold':     html = tplBold(d, show, s.accent, m);      break;
-    case 'compact':  html = tplCompact(d, show, s.accent, m);   break;
-    case 'serif':    html = tplSerif(d, show, s.accent, m);     break;
-    default:         html = tplModern(d, show, s.accent, m);
+    case 'modern':   rawHtml = tplModern(d, show, s.accent, m);    break;
+    case 'classic':  rawHtml = tplClassic(d, show, s.accent, m);   break;
+    case 'minimal':  rawHtml = tplMinimal(d, show, s.accent, m);   break;
+    case 'executive':rawHtml = tplExecutive(d, show, s.accent, m); break;
+    case 'creative': rawHtml = tplCreative(d, show, s.accent, m);  break;
+    case 'atspro':   rawHtml = tplAtsPro(d, show, s.accent, m);    break;
+    case 'tech':     rawHtml = tplTech(d, show, s.accent, m);      break;
+    case 'bold':     rawHtml = tplBold(d, show, s.accent, m);      break;
+    case 'compact':  rawHtml = tplCompact(d, show, s.accent, m);   break;
+    case 'serif':    rawHtml = tplSerif(d, show, s.accent, m);     break;
+    default:         rawHtml = tplModern(d, show, s.accent, m);
   }
 
-  el.innerHTML = html;
+  // Paginate the raw HTML
+  const paginatedHtml = paginate(rawHtml, s.paperSize);
+  el.innerHTML = paginatedHtml;
 
-  // trigger autosave
   if (typeof window.saveToCache === 'function') {
     window.saveToCache();
   }
+}
+
+function paginate(html, paperSize) {
+  // Create a hidden measurement div
+  const temp = document.createElement('div');
+  temp.style.position = 'absolute';
+  temp.style.width = paperSize === 'letter' ? '816px' : '794px'; // Approx width for A4/Letter
+  temp.style.visibility = 'hidden';
+  temp.style.left = '-9999px';
+  temp.style.fontFamily = document.getElementById('resumePreview').style.fontFamily;
+  temp.style.fontSize = document.getElementById('resumePreview').style.fontSize;
+  temp.style.lineHeight = document.getElementById('resumePreview').style.lineHeight;
+  temp.innerHTML = html;
+  document.body.appendChild(temp);
+
+  // Constants for A4/Letter heights in pixels (approx)
+  const pageHeightLimit = paperSize === 'letter' ? 1056 : 1123;
+  const padding = settings.pageMargin || 40;
+  const maxContentHeight = pageHeightLimit - (padding * 2);
+
+  const pages = [];
+  let currentPageContent = '';
+  let currentPageHeight = 0;
+
+  // We expect the template to return a main container (like .tpl-modern)
+  // We want to process its children (Header + Body contents)
+  const root = temp.firstElementChild;
+  if (!root) {
+    document.body.removeChild(temp);
+    return html;
+  }
+
+  // Flatten the structure: Header followed by all children of .res-body
+  const blocks = [];
+  const header = root.querySelector('.res-header') || root.querySelector('header') || root.firstElementChild;
+  if (header) blocks.push(header);
+
+  const body = root.querySelector('.res-body') || root;
+  if (body !== header) {
+    Array.from(body.children).forEach(child => blocks.push(child));
+  } else if (root.children.length > 1) {
+     Array.from(root.children).slice(1).forEach(child => blocks.push(child));
+  }
+
+  const createPageHtml = (content, pageNum, total) => `
+    <div class="resume-page ${paperSize === 'letter' ? 'letter' : ''}" style="padding: ${padding}px">
+      <div class="page-content">${content}</div>
+      <div class="page-footer">Page ${pageNum}</div>
+    </div>
+  `;
+
+  let currentBlocksHtml = '';
+  blocks.forEach((block, index) => {
+    const blockHeight = block.offsetHeight;
+    
+    if (currentPageHeight + blockHeight > maxContentHeight && currentBlocksHtml !== '') {
+      // Current page is full, save it and start new
+      pages.push(currentBlocksHtml);
+      currentBlocksHtml = block.outerHTML;
+      currentPageHeight = blockHeight;
+    } else {
+      currentBlocksHtml += block.outerHTML;
+      currentPageHeight += blockHeight;
+    }
+  });
+
+  if (currentBlocksHtml) {
+    pages.push(currentBlocksHtml);
+  }
+
+  document.body.removeChild(temp);
+
+  // Return all pages joined, with updated footer "Page X of Y"
+  return pages.map((p, i) => {
+    const html = createPageHtml(p, i + 1, pages.length);
+    return html.replace('Page ' + (i+1), `Page ${i + 1} of ${pages.length}`);
+  }).join('');
 }
 
 // ---- shared helpers ----
@@ -137,9 +212,14 @@ function renderProjects(list) {
   if (!list.length) return '';
   return list.map(p => `
     <div class="res-entry">
-      <div class="res-entry-title">${esc(p.name || 'Project')}</div>
-      <div class="res-entry-sub">
-        ${esc(p.tech || '')}${p.url ? ` ● <a href="${esc(p.url)}" target="_blank" data-pdf-url="${esc(p.url)}" class="cert-verify-link">Click for deployment</a>` : ''}
+      <div class="res-entry-header">
+        <div>
+          <div class="res-entry-title">${esc(p.name || 'Project')}</div>
+          <div class="res-entry-sub">
+            ${esc(p.tech || '')}${p.url ? ` ● <a href="${esc(p.url)}" target="_blank" data-pdf-url="${esc(p.url)}" class="cert-verify-link">Click for deployment</a>` : ''}
+          </div>
+        </div>
+        <div class="res-entry-date">${formatDateRange(p.start, p.end, p.current)}</div>
       </div>
       ${p.description ? `<div class="res-entry-desc">${esc(p.description)}</div>` : ''}
     </div>

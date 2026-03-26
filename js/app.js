@@ -555,10 +555,23 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="btn-icon del" onclick="deleteEntry('projects','${p.id}')">✕</button>
           </div>
         </div>
-        <div class="form-group"><label>Name</label>
-          <input value="${esc2(p.name)}" oninput="updateEntry('projects','${p.id}','name',this.value)" /></div>
-        <div class="form-group"><label>Tech Stack</label>
-          <input value="${esc2(p.tech)}" placeholder="React, Node.js, PostgreSQL" oninput="updateEntry('projects','${p.id}','tech',this.value)" /></div>
+        <div class="form-row">
+          <div class="form-group"><label>Name</label>
+            <input value="${esc2(p.name)}" oninput="updateEntry('projects','${p.id}','name',this.value)" /></div>
+          <div class="form-group"><label>Tech Stack</label>
+            <input value="${esc2(p.tech)}" placeholder="React, Node.js" oninput="updateEntry('projects','${p.id}','tech',this.value)" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Start</label>
+            <input value="${esc2(p.start)}" placeholder="MM/YYYY" oninput="updateEntry('projects','${p.id}','start',this.value)" /></div>
+          <div class="form-group"><label>End</label>
+            <input value="${esc2(p.end)}" placeholder="MM/YYYY" ${p.current ? 'disabled' : ''} oninput="updateEntry('projects','${p.id}','end',this.value)" /></div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.75rem; color:var(--text-dim);">
+            <input type="checkbox" ${p.current ? 'checked' : ''} onchange="updateEntry('projects','${p.id}','current',this.checked); renderProjectsEditor();" /> Currently Working
+          </label>
+        </div>
         <div class="form-group"><label>URL</label>
           <input value="${esc2(p.url)}" placeholder="https://..." oninput="updateEntry('projects','${p.id}','url',this.value)" /></div>
         <div class="form-group"><label>Description</label>
@@ -705,6 +718,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLanguagesEditor();
     renderResume();
   };
+  // Periodic Autosave (every 7 seconds)
+  setInterval(() => {
+    if (typeof window.saveToCache === 'function') {
+      window.saveToCache();
+    }
+  }, 7000);
 });
 
 // ---- helpers ----

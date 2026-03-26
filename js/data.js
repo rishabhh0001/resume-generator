@@ -47,7 +47,7 @@ function emptyEducation() {
 }
 
 function emptyProject() {
-  return { id: makeId(), name: '', description: '', url: '', tech: '' };
+  return { id: makeId(), name: '', description: '', url: '', tech: '', start: '', end: '', current: false };
 }
 
 function emptyCert() {
