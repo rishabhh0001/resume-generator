@@ -52,6 +52,21 @@ function paginate(html, paperSize) {
   temp.innerHTML = html;
   document.body.appendChild(temp);
 
+  const getOuterHeight = (el) => {
+    const style = window.getComputedStyle(el);
+    const marginTop = parseFloat(style.marginTop) || 0;
+    const marginBottom = parseFloat(style.marginBottom) || 0;
+    let height = el.offsetHeight + marginTop + marginBottom;
+    
+    const parent = el.parentElement;
+    if (parent && (parent.classList.contains('res-section') || parent.classList.contains('resume-section')) && parent.lastElementChild === el) {
+      const parentStyle = window.getComputedStyle(parent);
+      const parentMarginBottom = parseFloat(parentStyle.marginBottom) || 0;
+      height += parentMarginBottom;
+    }
+    return height;
+  };
+
   // Constants for A4/Letter heights in pixels (approx)
   const pageHeightLimit = paperSize === 'letter' ? 1056 : 1123;
   const padding = settings.pageMargin || 40;
@@ -79,7 +94,7 @@ function paginate(html, paperSize) {
 
   const blocks = [];
   if (header) {
-    blocks.push({ html: header.outerHTML, height: header.offsetHeight, type: 'header' });
+    blocks.push({ html: header.outerHTML, height: getOuterHeight(header), type: 'header' });
   }
 
   if (body) {
@@ -92,7 +107,7 @@ function paginate(html, paperSize) {
       children.forEach((child, idx) => {
         blocks.push({
           html: child.outerHTML,
-          height: child.offsetHeight,
+          height: getOuterHeight(child),
           type: 'body',
           sectionId: sId,
           sectionClass: sClass,
@@ -112,7 +127,7 @@ function paginate(html, paperSize) {
         children.forEach((child, idx) => {
           blocks.push({
             html: child.outerHTML,
-            height: child.offsetHeight,
+            height: getOuterHeight(child),
             type: 'body',
             sectionId: sId,
             sectionClass: sClass,
