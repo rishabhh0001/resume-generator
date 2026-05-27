@@ -65,6 +65,11 @@ function paginate(html, paperSize) {
     return html;
   }
 
+  // Ensure the root in the temp measurement container has the exact same width constraint as it will in the padded resume page
+  const rootWidth = (paperSize === 'letter' ? 816 : 794) - (2 * padding);
+  root.style.width = rootWidth + 'px';
+  root.style.boxSizing = 'border-box';
+
   const header = root.querySelector('.res-header, .resume-header');
   const body = root.querySelector('.res-body, .resume-body, .res-content');
   const templateClass = root.className;
@@ -83,14 +88,16 @@ function paginate(html, paperSize) {
       const sClass = section.className;
       const sStyle = section.getAttribute('style') || '';
       
-      Array.from(section.children).forEach(child => {
+      const children = Array.from(section.children);
+      children.forEach((child, idx) => {
         blocks.push({
           html: child.outerHTML,
           height: child.offsetHeight,
           type: 'body',
           sectionId: sId,
           sectionClass: sClass,
-          sectionStyle: sStyle
+          sectionStyle: sStyle,
+          isHeader: child.classList.contains('res-section-title') || child.classList.contains('res-sidebar-title')
         });
       });
     });
@@ -101,14 +108,16 @@ function paginate(html, paperSize) {
         const sId = 'sec-' + i;
         const sClass = section.className;
         const sStyle = section.getAttribute('style') || '';
-        Array.from(section.children).forEach(child => {
+        const children = Array.from(section.children);
+        children.forEach((child, idx) => {
           blocks.push({
             html: child.outerHTML,
             height: child.offsetHeight,
             type: 'body',
             sectionId: sId,
             sectionClass: sClass,
-            sectionStyle: sStyle
+            sectionStyle: sStyle,
+            isHeader: child.classList.contains('res-section-title') || child.classList.contains('res-sidebar-title')
           });
         });
       }
@@ -119,8 +128,15 @@ function paginate(html, paperSize) {
   let currentPageHeight = 0;
   let currentPageBlocks = [];
 
-  blocks.forEach((block) => {
-    if (currentPageHeight + block.height > maxContentHeight && currentPageBlocks.length > 0) {
+  blocks.forEach((block, index) => {
+    // Check if this is a section title and the next block (first entry) doesn't fit on this page.
+    // If they don't both fit, force this section title to start on the next page.
+    let nextBlockHeight = 0;
+    if (block.isHeader && index + 1 < blocks.length) {
+      nextBlockHeight = blocks[index + 1].height;
+    }
+
+    if (currentPageHeight + block.height + nextBlockHeight > maxContentHeight && currentPageBlocks.length > 0) {
       pages.push(currentPageBlocks);
       currentPageBlocks = [block];
       currentPageHeight = block.height;
