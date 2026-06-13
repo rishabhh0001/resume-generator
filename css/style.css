@@ -2264,7 +2264,7 @@ select:hover {
 /* ---- PRINT STYLES (ATS PDF EXPORT) ---- */
 @media print {
   /* Hide all UI elements */
-  .app-header, .editor-panel, .resizer, .customize-panel, .preview-toolbar, .toast, .glass-bg-blobs, .page-footer {
+  .app-header, .editor-panel, .resizer, .customize-panel, .preview-toolbar, .toast, .glass-bg-blobs, .page-footer, #loadingOverlay, #pagination-toolbar {
     display: none !important;
   }
 
@@ -2277,7 +2277,6 @@ select:hover {
     overflow: visible !important;
     display: block !important;
     transform: none !important;
-    #pagination-toolbar { display: none !important; }
   }
 
   /* Format the page exactly for the printer */
