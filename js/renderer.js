@@ -514,15 +514,11 @@ function tplCreative(d, show, accent, margin) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
   const initials = [p.firstName?.[0], p.lastName?.[0]].filter(Boolean).join('').toUpperCase() || 'RG';
 
-  const body = [
-    show.summary && d.summary ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">About</h2><p style="color:#444;font-size:0.9em">${esc(d.summary)}</p></section>` : '',
-    show.experience && d.experience.length ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Experience</h2>${renderExperience(d.experience)}</section>` : '',
-    show.education && d.education.length   ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Education</h2>${renderEducation(d.education)}</section>` : '',
-    show.projects && d.projects.length     ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Projects</h2>${renderProjects(d.projects)}</section>` : '',
-    show.skills && d.skills.length         ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Skills</h2>${renderSkills(d.skills, accent, '#fff')}</section>` : '',
-    show.certifications && d.certifications.length ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Certifications</h2>${renderCerts(d.certifications)}</section>` : '',
-    show.languages && d.languages.length   ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Languages</h2>${renderLanguages(d.languages)}</section>` : '',
-  ].join('');
+  const body = getOrderedBody(d, show, accent, (lbl, content) => {
+    if (lbl === 'Skills') content = renderSkills(d.skills, accent, '#fff');
+    if (lbl === 'Summary') return `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">About</h2><p style="color:#444;font-size:0.9em">${esc(d.summary)}</p></section>`;
+    return `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">${lbl}</h2>${content}</section>`;
+  });
 
   return `
     <div class="tpl-creative" style="padding:${margin}">
@@ -611,6 +607,12 @@ function tplCompact(d, show, accent, margin) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
   const contacts = contactItems(p);
 
+  const body = getOrderedBody(d, show, accent, (lbl, content) => {
+    if (lbl === 'Summary') return `<section class="res-section"><p style="font-size:9pt; margin-bottom:10pt">${esc(d.summary)}</p></section>`;
+    if (lbl === 'Skills') content = renderSkills(d.skills, '#f0f0f0', '#333');
+    return `<section class="res-section"><h2 class="res-section-title" style="color:${accent};margin:0;margin-bottom:8px;">${lbl}</h2>${content}</section>`;
+  });
+
   return `
     <div class="resume-body tpl-compact" style="padding:15mm ${margin}">
       <header style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:1pt solid #333; padding-bottom:6pt; margin-bottom:12pt;">
@@ -618,10 +620,7 @@ function tplCompact(d, show, accent, margin) {
         <address style="font-size:8.5pt; font-weight:500; font-style:normal;">${contacts.join('  |  ')}</address>
       </header>
       <main class="res-body">
-        ${show.summary && d.summary ? `<section class="res-section"><p style="font-size:9pt; margin-bottom:10pt">${esc(d.summary)}</p></section>` : ''}
-        ${show.experience && d.experience.length ? `<section class="res-section"><h2 class="res-section-title" style="color:${accent};margin:0;margin-bottom:8px;">Experience</h2>${renderExperience(d.experience)}</section>` : ''}
-        ${show.education && d.education.length   ? `<section class="res-section"><h2 class="res-section-title" style="color:${accent};margin:0;margin-bottom:8px;">Education</h2>${renderEducation(d.education)}</section>` : ''}
-        ${show.skills && d.skills.length ? `<section class="res-section"><h2 class="res-section-title" style="color:${accent};margin:0;margin-bottom:8px;">Skills</h2>${renderSkills(d.skills, '#f0f0f0', '#333')}</section>` : ''}
+        ${body}
       </main>
     </div>
   `;
@@ -632,11 +631,11 @@ function tplSerif(d, show, accent, margin) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
   const contacts = contactItems(p);
 
-  const body = [
-    show.summary && d.summary ? `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Summary</h2><p style="font-style:italic; font-family:serif; color:#444">${esc(d.summary)}</p></section>` : '',
-    show.experience && d.experience.length ? `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Experience</h2>${renderExperience(d.experience)}</section>` : '',
-    show.skills && d.skills.length ? `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Skills</h2>${renderSkills(d.skills, 'transparent', '#444')}</section>` : '',
-  ].join('');
+  const body = getOrderedBody(d, show, accent, (lbl, content) => {
+    if (lbl === 'Summary') return `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Summary</h2><p style="font-style:italic; font-family:serif; color:#444">${esc(d.summary)}</p></section>`;
+    if (lbl === 'Skills') content = renderSkills(d.skills, 'transparent', '#444');
+    return `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">${lbl}</h2>${content}</section>`;
+  });
 
   return `
     <div class="resume-body tpl-serif" style="padding:${margin}">
