@@ -2263,6 +2263,11 @@ select:hover {
 
 /* ---- PRINT STYLES (ATS PDF EXPORT) ---- */
 @media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
   /* Hide all UI elements */
   .app-header, .editor-panel, .resizer, .customize-panel, .preview-toolbar, .toast, .glass-bg-blobs, .page-footer, #loadingOverlay, #pagination-toolbar {
     display: none !important;
@@ -2286,10 +2291,22 @@ select:hover {
   .resume-page {
     box-shadow: none !important;
     margin: 0 !important;
-    width: 100% !important;
-    height: auto !important;
     page-break-after: always;
     break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    box-sizing: border-box;
+    overflow: hidden !important;
+  }
+
+  .resume-page.letter {
+    width: 816px !important;
+    height: 1056px !important;
+  }
+
+  .resume-page:not(.letter) {
+    width: 794px !important;
+    height: 1123px !important;
   }
 
   .resume-page:last-child {
