@@ -406,17 +406,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
 
-  document.getElementById('exportPdfBtn').addEventListener('click', async () => {
-    showLoading('Generating PDF...');
-    try {
-      await exportPdf();
-      toast('PDF downloaded ✓');
-    } catch (e) {
-      toast('PDF export failed: ' + e.message);
-      console.error(e);
-    } finally {
-      hideLoading();
-    }
+  document.getElementById('exportPdfBtn').addEventListener('click', () => {
+    showPdfExportOptionsModal(async (customSettings) => {
+      showLoading('Generating PDF...');
+      try {
+        await exportPdf(customSettings);
+        toast('PDF downloaded ✓');
+      } catch (e) {
+        toast('PDF export failed: ' + e.message);
+        console.error(e);
+      } finally {
+        hideLoading();
+      }
+    });
   });
 
   // ---- mobile panel switching ----
@@ -860,3 +862,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function showPdfExportOptionsModal(onConfirm) {
+  // Check if modal already exists, remove it
+  const existing = document.getElementById('pdf-export-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'pdf-export-modal';
+  modal.className = 'modal-overlay';
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.background = 'rgba(0, 0, 0, 0.6)';
+  modal.style.backdropFilter = 'blur(10px)';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.zIndex = '2000';
+
+  modal.innerHTML = `
+    <div style="background: #16181d; border: 1px solid #464554; border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: fadeInUp 0.3s ease;">
+      <h3 style="margin-top:0; margin-bottom:16px; font-family: var(--font-head); color: var(--text);">PDF Export Settings</h3>
+      <p style="font-size:0.85rem; color: var(--text-dim); margin-bottom: 20px;">Adjust layout parameters specifically for this PDF download. Leave as is to use your current preview settings.</p>
+      
+      <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
+        <div>
+          <label style="display:block; font-size:0.75rem; color:var(--text-dim); margin-bottom:6px; font-weight:600; text-align:left;">FONT SIZE (PT)</label>
+          <input type="number" id="pdf-font-size" value="${settings.fontSize}" min="6" max="24" step="0.5" style="width:100%; padding:10px; background:#262730; border:1px solid #464554; border-radius:6px; color:var(--text); box-sizing:border-box;" />
+        </div>
+        
+        <div>
+          <label style="display:block; font-size:0.75rem; color:var(--text-dim); margin-bottom:6px; font-weight:600; text-align:left;">LINE SPACING</label>
+          <input type="number" id="pdf-line-spacing" value="${settings.lineSpacing}" min="0.8" max="3.0" step="0.05" style="width:100%; padding:10px; background:#262730; border:1px solid #464554; border-radius:6px; color:var(--text); box-sizing:border-box;" />
+        </div>
+        
+        <div>
+          <label style="display:block; font-size:0.75rem; color:var(--text-dim); margin-bottom:6px; font-weight:600; text-align:left;">PAGE MARGIN (PX)</label>
+          <input type="number" id="pdf-page-margin" value="${settings.pageMargin}" min="10" max="150" step="5" style="width:100%; padding:10px; background:#262730; border:1px solid #464554; border-radius:6px; color:var(--text); box-sizing:border-box;" />
+        </div>
+      </div>
+      
+      <div style="display:flex; justify-content:flex-end; gap:12px;">
+        <button id="pdf-cancel-btn" class="btn-secondary" style="padding:10px 16px; border-radius:6px; font-weight:500; cursor:pointer; background:transparent; border:1px solid #464554; color:#e2e2eb;">Cancel</button>
+        <button id="pdf-export-btn" class="btn-primary" style="padding:10px 20px; border-radius:6px; font-weight:500; cursor:pointer; background:var(--accent); border:none; color:white;">Download PDF</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const close = () => modal.remove();
+
+  document.getElementById('pdf-cancel-btn').addEventListener('click', close);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) close();
+  });
+
+  document.getElementById('pdf-export-btn').addEventListener('click', () => {
+    const fontSize = parseFloat(document.getElementById('pdf-font-size').value) || settings.fontSize;
+    const lineSpacing = parseFloat(document.getElementById('pdf-line-spacing').value) || settings.lineSpacing;
+    const pageMargin = parseInt(document.getElementById('pdf-page-margin').value) || settings.pageMargin;
+    close();
+    onConfirm({ fontSize, lineSpacing, pageMargin });
+  });
+}

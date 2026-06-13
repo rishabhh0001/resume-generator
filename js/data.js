@@ -24,8 +24,8 @@ let settings = {
   template: 'modern',
   accent: '#6366f1',
   fontFamily: 'Inter',
-  fontSize: 11,
-  lineSpacing: 1.5,
+  fontSize: 10,
+  lineSpacing: 1.3,
   pageMargin: 40,
   paperSize: 'a4',
   visibleSections: {
