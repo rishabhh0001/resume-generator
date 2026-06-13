@@ -268,103 +268,103 @@ function formatDateRange(start, end, current) {
 function renderExperience(list) {
   if (!list.length) return '';
   return list.map(e => `
-    <div class="res-entry">
-      <div class="res-entry-header">
+    <article class="res-entry">
+      <header class="res-entry-header">
         <div>
-          <div class="res-entry-title">${esc(e.title || 'Title')}</div>
+          <h3 class="res-entry-title" style="margin:0;">${esc(e.title || 'Title')}</h3>
           <div class="res-entry-sub">
-            ${esc(e.company)}${e.location ? ` · ${esc(e.location)}` : ''}${e.url ? ` ● <a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer" data-pdf-url="${esc(e.url)}" class="cert-verify-link">Click to verify</a>` : ''}
+            <strong>${esc(e.company)}</strong>${e.location ? ` · ${esc(e.location)}` : ''}${e.url ? ` ● <a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer" data-pdf-url="${esc(e.url)}" class="cert-verify-link">Click to verify</a>` : ''}
           </div>
         </div>
         <div class="res-entry-date">${formatDateRange(e.start, e.end, e.current)}</div>
-      </div>
+      </header>
       ${e.description ? `<div class="res-entry-desc">${esc(e.description)}</div>` : ''}
-    </div>
+    </article>
   `).join('');
 }
 
 function renderEducation(list) {
   if (!list.length) return '';
   return list.map(e => `
-    <div class="res-entry">
-      <div class="res-entry-header">
+    <article class="res-entry">
+      <header class="res-entry-header">
         <div>
-          <div class="res-entry-title">${esc(e.institution || 'Institution')}</div>
+          <h3 class="res-entry-title" style="margin:0;">${esc(e.institution || 'Institution')}</h3>
           <div class="res-entry-sub">${[e.degree, e.field].filter(Boolean).map(esc).join(', ')}${e.gpa ? ` · GPA: ${esc(e.gpa)}` : ''}</div>
         </div>
         <div class="res-entry-date">${formatDateRange(e.start, e.end, false)}</div>
-      </div>
+      </header>
       ${e.description ? `<div class="res-entry-desc">${esc(e.description)}</div>` : ''}
-    </div>
+    </article>
   `).join('');
 }
 
 function renderSkills(list, chipBg, chipColor) {
   if (!list.length) return '';
   const showLevel = settings.visibleSections.skillLevel;
-  return `<div class="res-skills-list">${
+  return `<ul class="res-skills-list" style="margin:0;padding:0;list-style:none;">${
     list.map(s => {
       const name = typeof s === 'string' ? s : s.name;
       const levelHtml = (typeof s === 'object' && showLevel && s.level) ? `<span style="opacity:0.8;font-size:0.9em"> · ${esc(s.level)}</span>` : '';
-      return `<span class="res-skill-chip" style="background:${chipBg};color:${chipColor}">${esc(name)}${levelHtml}</span>`;
+      return `<li class="res-skill-chip" style="background:${chipBg};color:${chipColor}">${esc(name)}${levelHtml}</li>`;
     }).join('')
-  }</div>`;
+  }</ul>`;
 }
 
 function renderProjects(list) {
   if (!list.length) return '';
   return list.map(p => `
-    <div class="res-entry">
-      <div class="res-entry-header">
+    <article class="res-entry">
+      <header class="res-entry-header">
         <div>
-          <div class="res-entry-title">${esc(p.name || 'Project')}</div>
+          <h3 class="res-entry-title" style="margin:0;">${esc(p.name || 'Project')}</h3>
           <div class="res-entry-sub">
             ${esc(p.tech || '')}${p.url ? ` ● <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" data-pdf-url="${esc(p.url)}" class="cert-verify-link">Click for deployment</a>` : ''}
           </div>
         </div>
         <div class="res-entry-date">${formatDateRange(p.start, p.end, p.current)}</div>
-      </div>
+      </header>
       ${p.description ? `<div class="res-entry-desc">${esc(p.description)}</div>` : ''}
-    </div>
+    </article>
   `).join('');
 }
 
 function renderCerts(list) {
   if (!list.length) return '';
   return list.map(c => `
-    <div class="res-entry">
-      <div class="res-entry-header">
+    <article class="res-entry">
+      <header class="res-entry-header">
         <div>
-          <div class="res-entry-title">${esc(c.name || 'Certification')}</div>
+          <h3 class="res-entry-title" style="margin:0;">${esc(c.name || 'Certification')}</h3>
           <div class="res-entry-sub">
             ${esc(c.issuer || '')}${c.url ? ` ● <a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer" data-pdf-url="${esc(c.url)}" class="cert-verify-link">Click to verify</a>` : ''}
           </div>
         </div>
         ${c.date ? `<div class="res-entry-date">${esc(c.date)}</div>` : ''}
-      </div>
-    </div>
+      </header>
+    </article>
   `).join('');
 }
 
 function renderLanguages(list) {
   if (!list.length) return '';
   const showLevel = settings.visibleSections.languageLevel;
-  return `<div class="res-skills-list">${
+  return `<ul class="res-skills-list" style="margin:0;padding:0;list-style:none;">${
     list.map(l => {
       const levelHtml = (showLevel && l.level) ? `<span style="opacity:0.8;font-size:0.9em"> · ${esc(l.level)}</span>` : '';
-      return `<span class="res-skill-chip" style="background:#f0f0f0;color:#333">${esc(l.name)}${levelHtml}</span>`;
+      return `<li class="res-skill-chip" style="background:#f0f0f0;color:#333">${esc(l.name)}${levelHtml}</li>`;
     }).join('')
-  }</div>`;
+  }</ul>`;
 }
 
 // ---- section block helper ----
 function section(label, content, accentColor) {
   if (!content || !content.trim()) return '';
   return `
-    <div class="res-section" style="color:${accentColor}">
-      <div class="res-section-title">${label}</div>
+    <section class="res-section" style="color:${accentColor}">
+      <h2 class="res-section-title" style="margin:0;margin-bottom:8px;">${label}</h2>
       ${content}
-    </div>
+    </section>
   `;
 }
 
@@ -401,17 +401,17 @@ function tplModern(d, show, accent, margin) {
 
   return `
     <div class="tpl-modern" style="--accent:${accent}">
-      <div class="res-header" style="background:${accent};padding:${margin}">
+      <header class="res-header" style="background:${accent};padding:${margin}">
         <div style="display:flex; gap: 20px; align-items: center;">
-          ${p.photo ? `<img src="${p.photo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.5)">` : ''}
+          ${p.photo ? `<img src="${p.photo}" alt="Profile Photo" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.5)">` : ''}
           <div>
-            <div class="res-name">${esc(name)}</div>
+            <h1 class="res-name" style="margin:0;">${esc(name)}</h1>
             ${p.jobTitle ? `<div class="res-jobtitle">${esc(p.jobTitle)}</div>` : ''}
-            <div class="res-contact">${contacts.map(c => `<span>${c}</span>`).join('')}</div>
+            <address class="res-contact" style="font-style:normal;">${contacts.map(c => `<span>${c}</span>`).join('')}</address>
           </div>
         </div>
-      </div>
-      <div class="res-body" style="padding:${margin};padding-top:24px;color:#333">${body}</div>
+      </header>
+      <main class="res-body" style="padding:${margin};padding-top:24px;color:#333">${body}</main>
     </div>
   `;
 }
@@ -422,18 +422,18 @@ function tplClassic(d, show, accent, margin) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
 
   const body = getOrderedBody(d, show, accent, (lbl, content) => {
-    return `<div class="res-section"><div class="res-section-title" style="color:${accent}">${lbl}</div>${content}</div>`;
+    return `<section class="res-section"><h2 class="res-section-title" style="color:${accent};margin:0;margin-bottom:8px;">${lbl}</h2>${content}</section>`;
   });
 
   return `
     <div class="tpl-classic" style="padding:${margin}">
-      <div class="res-header">
-        ${p.photo ? `<img src="${p.photo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px;">` : ''}
-        <div class="res-name" style="color:${accent}">${esc(name)}</div>
+      <header class="res-header">
+        ${p.photo ? `<img src="${p.photo}" alt="Profile Photo" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px;">` : ''}
+        <h1 class="res-name" style="color:${accent};margin:0;">${esc(name)}</h1>
         ${p.jobTitle ? `<div class="res-jobtitle">${esc(p.jobTitle)}</div>` : ''}
-        <div class="res-contact">${contacts.map(c => `<span>${c}</span>`).join(' · ')}</div>
-      </div>
-      <div class="res-body">${body}</div>
+        <address class="res-contact" style="font-style:normal;">${contacts.map(c => `<span>${c}</span>`).join(' · ')}</address>
+      </header>
+      <main class="res-body">${body}</main>
     </div>
   `;
 }
@@ -444,21 +444,21 @@ function tplMinimal(d, show, accent, margin) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
 
   const body = getOrderedBody(d, show, accent, (lbl, content) => {
-    return `<div class="res-section"><div class="res-section-title">${lbl}</div>${content}</div>`;
+    return `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">${lbl}</h2>${content}</section>`;
   });
 
   return `
     <div class="tpl-minimal" style="padding:${margin}">
-      <div class="res-header" style="display:flex;justify-content:space-between;align-items:flex-end;">
+      <header class="res-header" style="display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
-          <div class="res-name">${esc(name)}</div>
+          <h1 class="res-name" style="margin:0;">${esc(name)}</h1>
           ${p.jobTitle ? `<div class="res-jobtitle">${esc(p.jobTitle)}</div>` : ''}
-          <div class="res-contact">${contacts.join('  ·  ')}</div>
+          <address class="res-contact" style="font-style:normal;">${contacts.join('  ·  ')}</address>
         </div>
-        ${p.photo ? `<img src="${p.photo}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;">` : ''}
-      </div>
+        ${p.photo ? `<img src="${p.photo}" alt="Profile Photo" style="width:72px;height:72px;border-radius:50%;object-fit:cover;">` : ''}
+      </header>
       <div class="res-accent-bar" style="background:${accent}"></div>
-      <div class="res-body" style="color:#333">${body}</div>
+      <main class="res-body" style="color:#333">${body}</main>
     </div>
   `;
 }
@@ -468,42 +468,42 @@ function tplExecutive(d, show, accent, margin) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
 
   const sidebarContent = `
-    <div class="res-sidebar-section">
-      <div class="res-sidebar-title">Contact</div>
+    <section class="res-sidebar-section">
+      <h2 class="res-sidebar-title" style="margin:0;margin-bottom:8px;">Contact</h2>
       ${p.email    ? `<div class="res-contact-item"><a href="mailto:${esc(p.email)}">${esc(p.email)}</a></div>` : ''}
       ${p.phone    ? `<div class="res-contact-item">${esc(p.phone)}</div>` : ''}
       ${p.location ? `<div class="res-contact-item">${esc(p.location)}</div>` : ''}
       ${p.website  ? `<div class="res-contact-item"><a href="${esc(p.website)}" target="_blank">${esc(cleanUrl(p.website))}</a></div>` : ''}
       ${p.linkedin ? `<div class="res-contact-item"><a href="${p.linkedin.startsWith('http') ? esc(p.linkedin) : `https://linkedin.com/in/${esc(p.linkedin)}`}" target="_blank">${esc(cleanUrl(p.linkedin))}</a></div>` : ''}
       ${p.github   ? `<div class="res-contact-item"><a href="${p.github.startsWith('http') ? esc(p.github) : `https://github.com/${esc(p.github)}`}" target="_blank">${esc(cleanUrl(p.github))}</a></div>` : ''}
-    </div>
+    </section>
     ${show.skills && d.skills.length ? `
-      <div class="res-sidebar-section">
-        <div class="res-sidebar-title">Skills</div>
+      <section class="res-sidebar-section">
+        <h2 class="res-sidebar-title" style="margin:0;margin-bottom:8px;">Skills</h2>
         ${d.skills.map(s => `<div class="res-contact-item">${esc(s.name)}</div>`).join('')}
-      </div>` : ''}
+      </section>` : ''}
     ${show.languages && d.languages.length ? `
-      <div class="res-sidebar-section">
-        <div class="res-sidebar-title">Languages</div>
+      <section class="res-sidebar-section">
+        <h2 class="res-sidebar-title" style="margin:0;margin-bottom:8px;">Languages</h2>
         ${d.languages.map(l => `<div class="res-contact-item">${esc(l.name)}${l.level ? ` (${l.level})` : ''}</div>`).join('')}
-      </div>` : ''}
+      </section>` : ''}
   `;
 
   const mainContent = getOrderedBody(d, show, accent, (lbl, content) => {
     // Executive has a specific title style
     if (['skills', 'languages'].includes(lbl.toLowerCase())) return ''; // Handled in sidebar
-    return `<div class="res-section"><div class="res-section-title" style="border-color:${accent};color:${accent}">${lbl}</div>${content}</div>`;
+    return `<section class="res-section"><h2 class="res-section-title" style="border-color:${accent};color:${accent};margin:0;margin-bottom:8px;">${lbl}</h2>${content}</section>`;
   });
 
   return `
     <div class="tpl-executive">
-      <div class="res-sidebar" style="background:${accent};padding:${margin}">
-        ${p.photo ? `<img src="${p.photo}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:20px;border:3px solid rgba(255,255,255,0.2);">` : ''}
-        <div class="res-name">${esc(name)}</div>
+      <aside class="res-sidebar" style="background:${accent};padding:${margin}">
+        ${p.photo ? `<img src="${p.photo}" alt="Profile Photo" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:20px;border:3px solid rgba(255,255,255,0.2);">` : ''}
+        <h1 class="res-name" style="margin:0;margin-bottom:8px;">${esc(name)}</h1>
         ${p.jobTitle ? `<div class="res-jobtitle">${esc(p.jobTitle)}</div>` : ''}
         ${sidebarContent}
-      </div>
-      <div class="res-main" style="padding:${margin};">${mainContent}</div>
+      </aside>
+      <main class="res-main" style="padding:${margin};">${mainContent}</main>
     </div>
   `;
 }
@@ -515,29 +515,29 @@ function tplCreative(d, show, accent, margin) {
   const initials = [p.firstName?.[0], p.lastName?.[0]].filter(Boolean).join('').toUpperCase() || 'RG';
 
   const body = [
-    show.summary && d.summary ? `<div class="res-section" style="color:${accent}"><div class="res-section-title">About</div><p style="color:#444;font-size:0.9em">${esc(d.summary)}</p></div>` : '',
-    show.experience && d.experience.length ? `<div class="res-section" style="color:${accent}"><div class="res-section-title">Experience</div>${renderExperience(d.experience)}</div>` : '',
-    show.education && d.education.length   ? `<div class="res-section" style="color:${accent}"><div class="res-section-title">Education</div>${renderEducation(d.education)}</div>` : '',
-    show.projects && d.projects.length     ? `<div class="res-section" style="color:${accent}"><div class="res-section-title">Projects</div>${renderProjects(d.projects)}</div>` : '',
-    show.skills && d.skills.length         ? `<div class="res-section" style="color:${accent}"><div class="res-section-title">Skills</div>${renderSkills(d.skills, accent, '#fff')}</div>` : '',
-    show.certifications && d.certifications.length ? `<div class="res-section" style="color:${accent}"><div class="res-section-title">Certifications</div>${renderCerts(d.certifications)}</div>` : '',
-    show.languages && d.languages.length   ? `<div class="res-section" style="color:${accent}"><div class="res-section-title">Languages</div>${renderLanguages(d.languages)}</div>` : '',
+    show.summary && d.summary ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">About</h2><p style="color:#444;font-size:0.9em">${esc(d.summary)}</p></section>` : '',
+    show.experience && d.experience.length ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Experience</h2>${renderExperience(d.experience)}</section>` : '',
+    show.education && d.education.length   ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Education</h2>${renderEducation(d.education)}</section>` : '',
+    show.projects && d.projects.length     ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Projects</h2>${renderProjects(d.projects)}</section>` : '',
+    show.skills && d.skills.length         ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Skills</h2>${renderSkills(d.skills, accent, '#fff')}</section>` : '',
+    show.certifications && d.certifications.length ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Certifications</h2>${renderCerts(d.certifications)}</section>` : '',
+    show.languages && d.languages.length   ? `<section class="res-section" style="color:${accent}"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Languages</h2>${renderLanguages(d.languages)}</section>` : '',
   ].join('');
 
   return `
     <div class="tpl-creative" style="padding:${margin}">
-      <div class="res-header">
+      <header class="res-header">
         ${p.photo 
-          ? `<img src="${p.photo}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;">` 
+          ? `<img src="${p.photo}" alt="Profile Photo" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;">` 
           : `<div class="res-avatar">${initials}</div>`
         }
         <div>
-          <div class="res-name" style="color:#111">${esc(name)}</div>
+          <h1 class="res-name" style="color:#111;margin:0;">${esc(name)}</h1>
           ${p.jobTitle ? `<div class="res-jobtitle">${esc(p.jobTitle)}</div>` : ''}
-          <div class="res-contact">${contacts.join(' · ')}</div>
+          <address class="res-contact" style="font-style:normal;">${contacts.join(' · ')}</address>
         </div>
-      </div>
-      ${body}
+      </header>
+      <main>${body}</main>
     </div>
   `;
 }
@@ -548,16 +548,16 @@ function tplAtsPro(d, show, accent, margin) {
   const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Your Name';
   
   const body = getOrderedBody(d, show, accent, (lbl, content) => {
-    return `<div class="res-section"><div class="res-section-title" style="color:${accent}">${lbl}</div>${content}</div>`;
+    return `<section class="res-section"><h2 class="res-section-title" style="color:${accent};margin:0;margin-bottom:8px;">${lbl}</h2>${content}</section>`;
   });
 
   return `
     <div class="resume-body tpl-atspro" style="padding:${margin}">
-      <div style="text-align:center; margin-bottom:24pt; border-bottom: 2pt solid #333; padding-bottom:12pt;">
-        <div style="font-size:24pt; font-weight:700; text-transform:uppercase; letter-spacing:2pt">${esc(name)}</div>
-        <div style="font-size:10pt; margin-top:8pt; word-spacing:4pt">${contacts.join('  |  ')}</div>
-      </div>
-      <div class="res-body">${body}</div>
+      <header style="text-align:center; margin-bottom:24pt; border-bottom: 2pt solid #333; padding-bottom:12pt;">
+        <h1 style="font-size:24pt; font-weight:700; text-transform:uppercase; letter-spacing:2pt; margin:0;">${esc(name)}</h1>
+        <address style="font-size:10pt; margin-top:8pt; word-spacing:4pt; font-style:normal;">${contacts.join('  |  ')}</address>
+      </header>
+      <main class="res-body">${body}</main>
     </div>
   `;
 }
@@ -568,16 +568,16 @@ function tplTech(d, show, accent, margin) {
   const contacts = contactItems(p);
 
   const body = getOrderedBody(d, show, accent, (lbl, content) => {
-    return `<div class="res-section"><div class="res-section-title">${lbl.toUpperCase()}</div>${content}</div>`;
+    return `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">${lbl.toUpperCase()}</h2>${content}</section>`;
   });
 
   return `
     <div class="resume-body tpl-tech" style="padding:${margin}">
-      <div style="border-bottom: 2pt solid var(--accent); padding-bottom:12pt; margin-bottom:24pt;">
-        <div style="font-size:24pt; font-weight:700; color:var(--accent); letter-spacing:-1pt">SYSTEM: ${esc(name.toUpperCase())}</div>
-        <div style="font-size:9pt; font-family:monospace; opacity:0.7;">> REF: ${contacts.join(' // ')}</div>
-      </div>
-      <div class="res-body">${body}</div>
+      <header style="border-bottom: 2pt solid var(--accent); padding-bottom:12pt; margin-bottom:24pt;">
+        <h1 style="font-size:24pt; font-weight:700; color:var(--accent); letter-spacing:-1pt; margin:0;">SYSTEM: ${esc(name.toUpperCase())}</h1>
+        <address style="font-size:9pt; font-family:monospace; opacity:0.7; font-style:normal; margin-top:8px;">> REF: ${contacts.join(' // ')}</address>
+      </header>
+      <main class="res-body">${body}</main>
     </div>
   `;
 }
@@ -589,19 +589,19 @@ function tplBold(d, show, accent, margin) {
 
   const body = getOrderedBody(d, show, accent, (lbl, content) => {
     if (lbl === 'Skills') content = renderSkills(d.skills, accent, '#fff');
-    return `<div class="res-section"><div class="res-section-title">${lbl}</div>${content}</div>`;
+    return `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">${lbl}</h2>${content}</section>`;
   });
 
   return `
     <div class="resume-body tpl-bold">
-      <div class="resume-header" style="background:${accent}; padding:40pt ${margin}">
-        <div style="font-size:32pt; font-weight:900; line-height:1; letter-spacing:-1.5pt; color:white">${esc(name)}</div>
+      <header class="resume-header" style="background:${accent}; padding:40pt ${margin}">
+        <h1 style="font-size:32pt; font-weight:900; line-height:1; letter-spacing:-1.5pt; color:white; margin:0;">${esc(name)}</h1>
         ${p.jobTitle ? `<div style="font-size:14pt; margin-top:10pt; opacity:0.9; color:white; font-weight:600">${esc(p.jobTitle)}</div>` : ''}
-        <div style="margin-top:20pt; font-size:10pt; color:white; opacity:0.8">${contacts.join('  ·  ')}</div>
-      </div>
-      <div style="padding:${margin}; padding-top:20pt;">
+        <address style="margin-top:20pt; font-size:10pt; color:white; opacity:0.8; font-style:normal;">${contacts.join('  ·  ')}</address>
+      </header>
+      <main style="padding:${margin}; padding-top:20pt;">
         ${body}
-      </div>
+      </main>
     </div>
   `;
 }
@@ -613,16 +613,16 @@ function tplCompact(d, show, accent, margin) {
 
   return `
     <div class="resume-body tpl-compact" style="padding:15mm ${margin}">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:1pt solid #333; padding-bottom:6pt; margin-bottom:12pt;">
-        <div style="font-size:18pt; font-weight:800; letter-spacing:-0.5pt">${esc(name)}</div>
-        <div style="font-size:8.5pt; font-weight:500;">${contacts.join('  |  ')}</div>
-      </div>
-      <div class="res-body">
-        ${show.summary && d.summary ? `<div class="res-section"><p style="font-size:9pt; margin-bottom:10pt">${esc(d.summary)}</p></div>` : ''}
-        ${show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Experience</div>${renderExperience(d.experience)}</div>` : ''}
-        ${show.education && d.education.length   ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Education</div>${renderEducation(d.education)}</div>` : ''}
-        ${show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title" style="color:${accent}">Skills</div>${renderSkills(d.skills, '#f0f0f0', '#333')}</div>` : ''}
-      </div>
+      <header style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:1pt solid #333; padding-bottom:6pt; margin-bottom:12pt;">
+        <h1 style="font-size:18pt; font-weight:800; letter-spacing:-0.5pt; margin:0;">${esc(name)}</h1>
+        <address style="font-size:8.5pt; font-weight:500; font-style:normal;">${contacts.join('  |  ')}</address>
+      </header>
+      <main class="res-body">
+        ${show.summary && d.summary ? `<section class="res-section"><p style="font-size:9pt; margin-bottom:10pt">${esc(d.summary)}</p></section>` : ''}
+        ${show.experience && d.experience.length ? `<section class="res-section"><h2 class="res-section-title" style="color:${accent};margin:0;margin-bottom:8px;">Experience</h2>${renderExperience(d.experience)}</section>` : ''}
+        ${show.education && d.education.length   ? `<section class="res-section"><h2 class="res-section-title" style="color:${accent};margin:0;margin-bottom:8px;">Education</h2>${renderEducation(d.education)}</section>` : ''}
+        ${show.skills && d.skills.length ? `<section class="res-section"><h2 class="res-section-title" style="color:${accent};margin:0;margin-bottom:8px;">Skills</h2>${renderSkills(d.skills, '#f0f0f0', '#333')}</section>` : ''}
+      </main>
     </div>
   `;
 }
@@ -633,18 +633,18 @@ function tplSerif(d, show, accent, margin) {
   const contacts = contactItems(p);
 
   const body = [
-    show.summary && d.summary ? `<div class="res-section"><div class="res-section-title">Summary</div><p style="font-style:italic; font-family:serif; color:#444">${esc(d.summary)}</p></div>` : '',
-    show.experience && d.experience.length ? `<div class="res-section"><div class="res-section-title">Experience</div>${renderExperience(d.experience)}</div>` : '',
-    show.skills && d.skills.length ? `<div class="res-section"><div class="res-section-title">Skills</div>${renderSkills(d.skills, 'transparent', '#444')}</div>` : '',
+    show.summary && d.summary ? `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Summary</h2><p style="font-style:italic; font-family:serif; color:#444">${esc(d.summary)}</p></section>` : '',
+    show.experience && d.experience.length ? `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Experience</h2>${renderExperience(d.experience)}</section>` : '',
+    show.skills && d.skills.length ? `<section class="res-section"><h2 class="res-section-title" style="margin:0;margin-bottom:8px;">Skills</h2>${renderSkills(d.skills, 'transparent', '#444')}</section>` : '',
   ].join('');
 
   return `
     <div class="resume-body tpl-serif" style="padding:${margin}">
-      <div style="text-align:center; padding-bottom:40pt; border-bottom: 1pt solid #ddd; margin-bottom:24pt;">
-        <div style="font-size:32pt; font-family:'Playfair Display', serif; color:#111">${esc(name)}</div>
-        <div style="font-size:10.5pt; font-style:italic; margin-top:12pt; color:#666; letter-spacing:0.5pt">${contacts.join('  ·  ')}</div>
-      </div>
-      <div class="res-body">${body}</div>
+      <header style="text-align:center; padding-bottom:40pt; border-bottom: 1pt solid #ddd; margin-bottom:24pt;">
+        <h1 style="font-size:32pt; font-family:'Playfair Display', serif; color:#111; margin:0;">${esc(name)}</h1>
+        <address style="font-size:10.5pt; font-style:italic; margin-top:12pt; color:#666; letter-spacing:0.5pt; font-style:normal;">${contacts.join('  ·  ')}</address>
+      </header>
+      <main class="res-body">${body}</main>
     </div>
   `;
 }

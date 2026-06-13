@@ -2259,5 +2259,50 @@ select:hover {
 .resume-body.tpl-compact .section { margin-bottom: 10px; }
 .resume-body.tpl-compact .item-header { margin-bottom: 0; }
 
-.resume-body.tpl-serif { font-family: 'Playfair Display', serif !important; }
 .resume-body.tpl-serif .section-title { font-style: italic; border-bottom: 1px solid rgba(0,0,0,0.1); display: block; width: 100%; }
+
+/* ---- PRINT STYLES (ATS PDF EXPORT) ---- */
+@media print {
+  /* Hide all UI elements */
+  .app-header, .editor-panel, .resizer, .customize-panel, .preview-toolbar, .toast, .glass-bg-blobs, .page-footer {
+    display: none !important;
+  }
+
+  /* Reset body and container for printing */
+  body, .app-main, .preview-panel, .preview-scroll, .preview-scale-wrapper {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    transform: none !important;
+  }
+
+  /* Format the page exactly for the printer */
+  .resume-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .resume-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* Remove link underlines or styles usually added by browsers in print */
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+  
+  /* Ensure backgrounds render in Chrome/Safari/Edge print dialog */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
