@@ -97,6 +97,7 @@ function paginate(html, paperSize) {
     blocks.push({ html: header.outerHTML, height: getOuterHeight(header), type: 'header' });
   }
 
+  let blockIdx = 0;
   if (body) {
     Array.from(body.children).forEach((section, i) => {
       const sId = 'sec-' + i;
@@ -105,7 +106,9 @@ function paginate(html, paperSize) {
       
       const children = Array.from(section.children);
       children.forEach((child, idx) => {
+        child.setAttribute('data-block-idx', blockIdx);
         blocks.push({
+          index: blockIdx,
           html: child.outerHTML,
           height: getOuterHeight(child),
           type: 'body',
@@ -114,6 +117,7 @@ function paginate(html, paperSize) {
           sectionStyle: sStyle,
           isHeader: child.classList.contains('res-section-title') || child.classList.contains('res-sidebar-title')
         });
+        blockIdx++;
       });
     });
   } else {
@@ -125,7 +129,9 @@ function paginate(html, paperSize) {
         const sStyle = section.getAttribute('style') || '';
         const children = Array.from(section.children);
         children.forEach((child, idx) => {
+          child.setAttribute('data-block-idx', blockIdx);
           blocks.push({
+            index: blockIdx,
             html: child.outerHTML,
             height: getOuterHeight(child),
             type: 'body',
@@ -134,6 +140,7 @@ function paginate(html, paperSize) {
             sectionStyle: sStyle,
             isHeader: child.classList.contains('res-section-title') || child.classList.contains('res-sidebar-title')
           });
+          blockIdx++;
         });
       }
     });
@@ -144,14 +151,25 @@ function paginate(html, paperSize) {
   let currentPageBlocks = [];
 
   blocks.forEach((block, index) => {
-    // Check if this is a section title and the next block (first entry) doesn't fit on this page.
-    // If they don't both fit, force this section title to start on the next page.
     let nextBlockHeight = 0;
     if (block.isHeader && index + 1 < blocks.length) {
       nextBlockHeight = blocks[index + 1].height;
     }
 
-    if (currentPageHeight + block.height + nextBlockHeight > maxContentHeight && currentPageBlocks.length > 0) {
+    let force = settings.pageBreaks && settings.pageBreaks[block.index];
+
+    if (force === 'next') {
+      if (currentPageBlocks.length > 0) {
+        pages.push(currentPageBlocks);
+        currentPageBlocks = [];
+        currentPageHeight = 0;
+      }
+      currentPageBlocks.push(block);
+      currentPageHeight += block.height;
+    } else if (force === 'prev') {
+      currentPageBlocks.push(block);
+      currentPageHeight += block.height;
+    } else if (currentPageHeight + block.height + nextBlockHeight > maxContentHeight && currentPageBlocks.length > 0) {
       pages.push(currentPageBlocks);
       currentPageBlocks = [block];
       currentPageHeight = block.height;

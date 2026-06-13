@@ -800,3 +800,63 @@ function arrayBufferToBase64(buffer) {
   }
   return window.btoa(binary);
 }
+
+// ---- Pagination Controls ----
+document.addEventListener('DOMContentLoaded', () => {
+  const toolbar = document.createElement('div');
+  toolbar.id = 'pagination-toolbar';
+  toolbar.innerHTML = `
+    <button id="page-push-prev" title="Force to stay on this page">⬆️ Pull Up</button>
+    <button id="page-push-next" title="Force to start on next page">⬇️ Push Down</button>
+    <button id="page-push-reset" title="Reset pagination override for this block">🔄 Auto</button>
+  `;
+  document.body.appendChild(toolbar);
+
+  let activeBlockIdx = null;
+  const previewPanel = document.getElementById('resumePreview');
+  
+  previewPanel.addEventListener('mouseover', (e) => {
+    const block = e.target.closest('[data-block-idx]');
+    if (block) {
+      activeBlockIdx = block.getAttribute('data-block-idx');
+      
+      const rect = block.getBoundingClientRect();
+      toolbar.style.display = 'flex';
+      toolbar.style.top = (rect.top + window.scrollY - 34) + 'px';
+      toolbar.style.left = (rect.left + window.scrollX + rect.width - toolbar.offsetWidth) + 'px';
+    }
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!e.target.closest('#resumePreview') && !e.target.closest('#pagination-toolbar')) {
+      toolbar.style.display = 'none';
+      activeBlockIdx = null;
+    }
+  });
+
+  document.getElementById('page-push-prev').addEventListener('click', () => {
+    if (activeBlockIdx !== null) {
+      if (!settings.pageBreaks) settings.pageBreaks = {};
+      settings.pageBreaks[activeBlockIdx] = 'prev';
+      renderResume();
+      saveToCache();
+    }
+  });
+
+  document.getElementById('page-push-next').addEventListener('click', () => {
+    if (activeBlockIdx !== null) {
+      if (!settings.pageBreaks) settings.pageBreaks = {};
+      settings.pageBreaks[activeBlockIdx] = 'next';
+      renderResume();
+      saveToCache();
+    }
+  });
+
+  document.getElementById('page-push-reset').addEventListener('click', () => {
+    if (activeBlockIdx !== null && settings.pageBreaks) {
+      delete settings.pageBreaks[activeBlockIdx];
+      renderResume();
+      saveToCache();
+    }
+  });
+});

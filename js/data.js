@@ -33,7 +33,8 @@ let settings = {
     skills: true, projects: true, certifications: true, languages: true,
     skillLevel: true, languageLevel: true, pageNumber: true
   },
-  sectionOrder: ['summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'languages']
+  sectionOrder: ['summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'languages'],
+  pageBreaks: {}
 };
 
 function makeId() {
