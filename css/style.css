@@ -2269,13 +2269,16 @@ select:hover {
   }
 
   /* Reset body and container for printing */
-  body, .app-main, .preview-panel, .preview-scroll, .preview-scale-wrapper {
+  html, body, .app-container, .app-main, .preview-panel, .preview-scroll, .preview-scale-wrapper, .resume-paper-container {
     background: transparent !important;
     padding: 0 !important;
     margin: 0 !important;
     height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
     overflow: visible !important;
     display: block !important;
+    position: static !important;
     transform: none !important;
   }
 
