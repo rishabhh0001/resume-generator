@@ -98,50 +98,61 @@ function paginate(html, paperSize) {
   }
 
   let blockIdx = 0;
+  const processSection = (section, i) => {
+    const sId = 'sec-' + i;
+    const sClass = section.className;
+    const sStyle = section.getAttribute('style') || '';
+    
+    // Find all entry elements inside the section
+    const entryElements = Array.from(section.querySelectorAll('.res-entry, article'));
+    const sectionChildren = [];
+    
+    if (entryElements.length > 0) {
+      // Find the title element
+      const titleEl = section.querySelector('.res-section-title, .res-sidebar-title, h1, h2, h3, h4');
+      if (titleEl) {
+        sectionChildren.push(titleEl);
+      }
+      // Add all entry elements
+      entryElements.forEach(entry => {
+        sectionChildren.push(entry);
+      });
+      // Include any other direct children that do not contain or are not entries, and are not the title
+      Array.from(section.children).forEach(child => {
+        if (child !== titleEl && !child.contains(entryElements[0]) && !entryElements.includes(child)) {
+          sectionChildren.push(child);
+        }
+      });
+    } else {
+      // Default fallback: direct children of the section
+      sectionChildren.push(...Array.from(section.children));
+    }
+
+    sectionChildren.forEach((child) => {
+      child.setAttribute('data-block-idx', blockIdx);
+      blocks.push({
+        index: blockIdx,
+        html: child.outerHTML,
+        height: getOuterHeight(child),
+        type: 'body',
+        sectionId: sId,
+        sectionClass: sClass,
+        sectionStyle: sStyle,
+        isHeader: child.classList.contains('res-section-title') || child.classList.contains('res-sidebar-title')
+      });
+      blockIdx++;
+    });
+  };
+
   if (body) {
     Array.from(body.children).forEach((section, i) => {
-      const sId = 'sec-' + i;
-      const sClass = section.className;
-      const sStyle = section.getAttribute('style') || '';
-      
-      const children = Array.from(section.children);
-      children.forEach((child, idx) => {
-        child.setAttribute('data-block-idx', blockIdx);
-        blocks.push({
-          index: blockIdx,
-          html: child.outerHTML,
-          height: getOuterHeight(child),
-          type: 'body',
-          sectionId: sId,
-          sectionClass: sClass,
-          sectionStyle: sStyle,
-          isHeader: child.classList.contains('res-section-title') || child.classList.contains('res-sidebar-title')
-        });
-        blockIdx++;
-      });
+      processSection(section, i);
     });
   } else {
     // Fallback if no .res-body
     Array.from(root.children).forEach((section, i) => {
       if (section !== header) {
-        const sId = 'sec-' + i;
-        const sClass = section.className;
-        const sStyle = section.getAttribute('style') || '';
-        const children = Array.from(section.children);
-        children.forEach((child, idx) => {
-          child.setAttribute('data-block-idx', blockIdx);
-          blocks.push({
-            index: blockIdx,
-            html: child.outerHTML,
-            height: getOuterHeight(child),
-            type: 'body',
-            sectionId: sId,
-            sectionClass: sClass,
-            sectionStyle: sStyle,
-            isHeader: child.classList.contains('res-section-title') || child.classList.contains('res-sidebar-title')
-          });
-          blockIdx++;
-        });
+        processSection(section, i);
       }
     });
   }
@@ -521,7 +532,7 @@ function tplExecutive(d, show, accent, margin) {
         ${p.jobTitle ? `<div class="res-jobtitle">${esc(p.jobTitle)}</div>` : ''}
         ${sidebarContent}
       </aside>
-      <main class="res-main" style="padding:${margin};">${mainContent}</main>
+      <main class="res-body res-main" style="padding:${margin};">${mainContent}</main>
     </div>
   `;
 }
@@ -551,7 +562,7 @@ function tplCreative(d, show, accent, margin) {
           <address class="res-contact" style="font-style:normal;">${contacts.join(' · ')}</address>
         </div>
       </header>
-      <main>${body}</main>
+      <main class="res-body">${body}</main>
     </div>
   `;
 }
@@ -613,7 +624,7 @@ function tplBold(d, show, accent, margin) {
         ${p.jobTitle ? `<div style="font-size:14pt; margin-top:10pt; opacity:0.9; color:white; font-weight:600">${esc(p.jobTitle)}</div>` : ''}
         <address style="margin-top:20pt; font-size:10pt; color:white; opacity:0.8; font-style:normal;">${contacts.join('  ·  ')}</address>
       </header>
-      <main style="padding:${margin}; padding-top:20pt;">
+      <main class="res-body" style="padding:${margin}; padding-top:20pt;">
         ${body}
       </main>
     </div>
